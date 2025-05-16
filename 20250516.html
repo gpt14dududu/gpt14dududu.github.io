@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動成語閃卡 (多模式更新)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        .flashcard-container {
+            perspective: 1000px;
+            width: 90%;
+            max-width: 500px;
+            min-height: 380px; /* 略微增加最小高度 */
+            margin: 15px auto; /* 調整邊距 */
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            min-height: 350px; /* 卡片最小高度 */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px; /* 統一內邊距 */
+            box-sizing: border-box;
+            border-radius: 16px;
+            text-align: center;
+            overflow-y: auto;
+        }
+        .flashcard-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .flashcard-back {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: #333;
+            transform: rotateY(180deg);
+        }
+        .idiom-text {
+            font-size: 2rem; /* 調整大小以適應空間 */
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .bopomofo-text {
+            font-size: 0.9rem; /* 調整大小 */
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+        /* 用於選擇題模式下，成語作為題目時的樣式 */
+        .flashcard-front .question-idiom-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff; /* 確保在正面背景上可見 */
+            margin-bottom: 2px;
+        }
+        .flashcard-front .question-bopomofo-text {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+        .flashcard-back h3, .mcq-question-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #583c63;
+            margin-bottom: 6px;
+        }
+         .flashcard-front .mcq-question-title {
+            color: #f0f0f0;
+            margin-top: 0;
+            margin-bottom: 8px; /* 增加與下方內容的間距 */
+        }
+        .flashcard-back p, .flashcard-front .mcq-question-text {
+            font-size: 0.85rem; /* 調整內文大小 */
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .flashcard-front .mcq-question-text {
+             color: #ffffff;
+             max-height: 90px;
+             overflow-y: auto;
+             margin-bottom: 10px; /* 確保與選項間有足夠空間 */
+        }
+
+        .navigation-buttons, .mode-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px; /* 調整上方間距 */
+            margin-bottom: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-button, .mode-button {
+            background-color: #4a5568;
+            color: white;
+            padding: 8px 15px; /* 統一按鈕大小 */
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem; /* 統一字體大小 */
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+        }
+        .nav-button:hover, .mode-button:hover {
+            background-color: #2d3748;
+            transform: translateY(-1px);
+        }
+        .nav-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+            transform: translateY(0);
+        }
+        .mode-button.active {
+            background-color: #667eea;
+            font-weight: bold;
+        }
+        .card-counter {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+        .instructions {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 0.85rem;
+        }
+
+        .multiple-choice-options {
+            margin-top: 10px; /* 調整與上方問題的間距 */
+            display: flex;
+            flex-direction: column;
+            gap: 6px; /* 選項間距 */
+            width: 100%;
+            padding: 0 8px;
+            box-sizing: border-box;
+        }
+        .choice-button {
+            background-color: #718096;
+            color: white;
+            padding: 8px; /* 選項按鈕內邊距 */
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem; /* 選項文字大小 */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+            word-break: break-word; /* 防止文字過長溢出 */
+        }
+        .choice-button:hover {
+            background-color: #4a5568;
+        }
+        .choice-button.correct {
+            background-color: #48bb78;
+        }
+        .choice-button.incorrect {
+            background-color: #f56565;
+        }
+        .feedback-message {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            min-height: 18px; /* 調整高度 */
+        }
+
+        @media (max-width: 600px) {
+            .flashcard-container {
+                 min-height: 420px; /* 手機上確保足夠高度 */
+            }
+            .idiom-text, .flashcard-front .question-idiom-text {
+                font-size: 1.6rem;
+            }
+            .bopomofo-text, .flashcard-front .question-bopomofo-text {
+                font-size: 0.8rem;
+            }
+            .flashcard-back h3, .mcq-question-title {
+                font-size: 1rem;
+            }
+            .flashcard-back p, .flashcard-front .mcq-question-text {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col items-center justify-center min-h-screen p-3">
+
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-700 mb-4 text-center">互動成語閃卡</h1>
+    <p class="instructions">點擊卡片翻面。選擇模式開始學習！</p>
+
+    <div class="mode-selector">
+        <button id="mode-normal" class="mode-button active">正向學習</button>
+        <button id="mode-reverse" class="mode-button">反向學習</button>
+        <button id="mode-mcq-meaning-to-idiom" class="mode-button">選擇題 (看意思選成語)</button>
+        <button id="mode-mcq-idiom-to-meaning" class="mode-button">選擇題 (看成語選意思)</button>
+    </div>
+
+    <div id="flashcard-container" class="flashcard-container">
+        <div id="flashcard" class="flashcard">
+            <div class="flashcard-face flashcard-front">
+                </div>
+            <div class="flashcard-face flashcard-back">
+                </div>
+        </div>
+    </div>
+    <div id="feedback-message" class="feedback-message text-center"></div>
+
+    <div id="card-counter" class="card-counter"></div>
+
+    <div class="navigation-buttons">
+        <button id="prev-button" class="nav-button">上一張</button>
+        <button id="next-button" class="nav-button">下一張</button>
+    </div>
+
+    <script>
+        const idioms = [
+            { idiom: "洗耳恭聽", pinyin: "xǐ ěr gōng tīng", bopomofo: "ㄒㄧˇ ㄦˇ ㄍㄨㄥ ㄊㄧㄥ", meaning: "比喻專心恭敬的聆聽。", example: "有何高見請直說無妨，我們一定洗耳恭聽。" },
+            { idiom: "負荊請罪", pinyin: "fù jīng qǐng zuì", bopomofo: "ㄈㄨˋ ㄐㄧㄥ ㄑㄧㄥˇ ㄗㄨㄟˋ", meaning: "比喻主動向對方承認錯誤，請求責罰和原諒。", example: "對於他負荊請罪，勇於悔改的作法，我深感欽佩。" },
+            { idiom: "披荊斬棘", pinyin: "pī jīng zhǎn jí", bopomofo: "ㄆㄧ ㄐㄧㄥ ㄓㄢˇ ㄐㄧˊ", meaning: "比喻克服困難，掃除障礙。", example: "他白手起家，多年來在商場上披荊斬棘，終於有了今日的成就。" },
+            { idiom: "移風易俗", pinyin: "yí fēng yì sú", bopomofo: "ㄧˊ ㄈㄥ ㄧˋ ㄙㄨˊ", meaning: "改善不良的社會風氣和習俗。", example: "典雅的音樂具有移風易俗的功效，當然值得大力推廣。" },
+            { idiom: "咫尺天涯", pinyin: "zhǐ chǐ tiān yá", bopomofo: "ㄓˇ ㄔˇ ㄊㄧㄢ ㄧㄚˊ", meaning: "比喻相距雖近，卻有如相隔天涯一般，無緣相見。", example: "我們雖然是鄰居，卻因各忙各的，很少見面，真可謂咫尺天涯。" },
+            { idiom: "一帆風順", pinyin: "yī fān fēng shùn", bopomofo: "ㄧ ㄈㄢ ㄈㄥ ㄕㄨㄣˋ", meaning: "比喻非常順利，毫無阻礙。", example: "張先生有貴人相助，事業一帆風順。" },
+            { idiom: "高瞻遠矚", pinyin: "gāo zhān yuǎn zhǔ", bopomofo: "ㄍㄠ ㄓㄢ ㄩㄢˇ ㄓㄨˇ", meaning: "形容見識遠大，看得長遠。", example: "由於他的高瞻遠矚，帶領公司度過此次全球金融危機。" },
+            { idiom: "大智若愚", pinyin: "dà zhì ruò yú", bopomofo: "ㄉㄚˋ ㄓˋ ㄖㄨㄛˋ ㄩˊ", meaning: "指有極高智慧的人，往往表面上看起來似乎愚笨。", example: "這位長者的為人處世，給人一種大智若愚的感受。" }, // 簡化例句以適應空間
+            { idiom: "赴湯蹈火", pinyin: "fù tāng dǎo huǒ", bopomofo: "ㄈㄨˋ ㄊㄤ ㄉㄠˋ ㄏㄨㄛˇ", meaning: "比喻奮不顧身，不避艱險。", example: "他早已下了赴湯蹈火的決心，要挑戰任何艱難險阻。" },
+            { idiom: "如雷貫耳", pinyin: "rú léi guàn ěr", bopomofo: "ㄖㄨˊ ㄌㄟˊ ㄍㄨㄢˋ ㄦˇ", meaning: "形容人的名氣很大，眾所共聞。", example: "自從他得到奧運金牌後，在體育界已是如雷貫耳的人物。" }
+        ];
+
+        let currentCardIndex = 0;
+        let currentMode = 'normal'; // 'normal', 'reverse', 'mcqMeaningToIdiom', 'mcqIdiomToMeaning'
+        const flashcard = document.getElementById('flashcard');
+        const flashcardFront = flashcard.querySelector('.flashcard-front');
+        const flashcardBack = flashcard.querySelector('.flashcard-back');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const cardCounter = document.getElementById('card-counter');
+        const feedbackMessageEl = document.getElementById('feedback-message');
+
+        const modeButtons = {
+            normal: document.getElementById('mode-normal'),
+            reverse: document.getElementById('mode-reverse'),
+            mcqMeaningToIdiom: document.getElementById('mode-mcq-meaning-to-idiom'),
+            mcqIdiomToMeaning: document.getElementById('mode-mcq-idiom-to-meaning')
+        };
+
+        function updateFlashcard() {
+            const currentIdiomData = idioms[currentCardIndex];
+            feedbackMessageEl.textContent = '';
+            flashcardFront.innerHTML = '';
+            flashcardBack.innerHTML = ''; // 每次都重新渲染背面，確保內容正確
+            flashcardFront.style.justifyContent = 'center'; // 預設垂直居中
+
+            // 卡片背面始終顯示完整資訊
+            flashcardBack.innerHTML = `
+                <div class="idiom-text">${currentIdiomData.idiom}</div>
+                <div class="bopomofo-text">${currentIdiomData.bopomofo}</div>
+                <h3>意思</h3>
+                <p>${currentIdiomData.meaning}</p>
+                <h3>例句</h3>
+                <p>${currentIdiomData.example}</p>
+            `;
+
+            if (currentMode === 'normal') {
+                flashcardFront.innerHTML = `
+                    <div class="idiom-text">${currentIdiomData.idiom}</div>
+                    <div class="bopomofo-text">${currentIdiomData.bopomofo}</div>
+                `;
+            } else if (currentMode === 'reverse') {
+                flashcardFront.innerHTML = `
+                    <h3 class="mcq-question-title">這個成語的意思是：</h3>
+                    <p class="mcq-question-text">${currentIdiomData.meaning}</p>
+                `;
+            } else if (currentMode === 'mcqMeaningToIdiom') {
+                flashcardFront.style.justifyContent = 'flex-start';
+                flashcardFront.innerHTML = `
+                    <h3 class="mcq-question-title">下列哪個成語的意思是：</h3>
+                    <p class="mcq-question-text">${currentIdiomData.meaning}</p>
+                `;
+                generateMultipleChoiceOptions(currentIdiomData, 'mcqMeaningToIdiom');
+            } else if (currentMode === 'mcqIdiomToMeaning') {
+                flashcardFront.style.justifyContent = 'flex-start';
+                flashcardFront.innerHTML = `
+                    <div class="question-idiom-text">${currentIdiomData.idiom}</div>
+                    <div class="question-bopomofo-text">${currentIdiomData.bopomofo}</div>
+                    <h3 class="mcq-question-title">這個成語的意思是下列何者？</h3>
+                `;
+                generateMultipleChoiceOptions(currentIdiomData, 'mcqIdiomToMeaning');
+            }
+
+            if (flashcard.classList.contains('is-flipped')) {
+                flashcard.classList.remove('is-flipped');
+            }
+            cardCounter.textContent = `第 ${currentCardIndex + 1} 張 / 共 ${idioms.length} 張`;
+            prevButton.disabled = currentCardIndex === 0;
+            nextButton.disabled = currentCardIndex === idioms.length - 1;
+        }
+
+        function generateMultipleChoiceOptions(correctIdiomData, mode) {
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'multiple-choice-options';
+            let optionsData = [correctIdiomData];
+            const distractors = idioms.filter(idiom => idiom.idiom !== correctIdiomData.idiom);
+            shuffleArray(distractors);
+
+            for (let i = 0; i < Math.min(3, distractors.length); i++) {
+                optionsData.push(distractors[i]);
+            }
+            shuffleArray(optionsData);
+
+            optionsData.forEach(optionDataItem => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                let buttonText, buttonValue;
+
+                if (mode === 'mcqMeaningToIdiom') {
+                    buttonText = optionDataItem.idiom;
+                    buttonValue = optionDataItem.idiom;
+                } else { // mcqIdiomToMeaning
+                    buttonText = optionDataItem.meaning;
+                    buttonValue = optionDataItem.meaning;
+                }
+                button.textContent = buttonText;
+                button.dataset.value = buttonValue;
+
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    handleMcqAnswer(buttonValue, correctIdiomData, optionsContainer, mode);
+                });
+                optionsContainer.appendChild(button);
+            });
+            flashcardFront.appendChild(optionsContainer);
+        }
+
+        function handleMcqAnswer(selectedValue, correctIdiomData, optionsContainer, mode) {
+            const buttons = optionsContainer.querySelectorAll('.choice-button');
+            let correctAnswerValue;
+            let isCorrect;
+
+            if (mode === 'mcqMeaningToIdiom') {
+                correctAnswerValue = correctIdiomData.idiom;
+                isCorrect = (selectedValue === correctAnswerValue);
+            } else { // mcqIdiomToMeaning
+                correctAnswerValue = correctIdiomData.meaning;
+                isCorrect = (selectedValue === correctAnswerValue);
+            }
+
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.dataset.value === correctAnswerValue) {
+                    btn.classList.add('correct');
+                }
+                if (btn.dataset.value === selectedValue && !isCorrect) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            if (isCorrect) {
+                feedbackMessageEl.textContent = '答對了！ 🎉';
+                feedbackMessageEl.style.color = '#38A169';
+            } else {
+                const feedbackText = mode === 'mcqMeaningToIdiom' ? `答錯了。正確答案是：${correctAnswerValue}` : `答錯了。正確意思是：「${correctAnswerValue}」`;
+                feedbackMessageEl.textContent = feedbackText;
+                feedbackMessageEl.style.color = '#E53E3E';
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            Object.values(modeButtons).forEach(btn => btn.classList.remove('active'));
+            if (modeButtons[mode]) {
+                modeButtons[mode].classList.add('active');
+            }
+            currentCardIndex = 0;
+            updateFlashcard();
+        }
+
+        Object.keys(modeButtons).forEach(modeKey => {
+            if (modeButtons[modeKey]) {
+                modeButtons[modeKey].addEventListener('click', () => setMode(modeKey));
+            }
+        });
+
+        flashcard.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+        });
+
+        prevButton.addEventListener('click', () => {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateFlashcard();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentCardIndex < idioms.length - 1) {
+                currentCardIndex++;
+                updateFlashcard();
+            }
+        });
+
+        setMode('normal'); // 預設為正向模式
+    </script>
+
+</body>
+</html>

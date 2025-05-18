@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢字練習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+    /* Global styles */
+    body {
+        font-family: 'Noto Sans TC', sans-serif;
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on touch devices */
+    }
+
+    /* General Button Styling */
+    .btn {
+        padding: 0.65rem 1.3rem; /* Tailwind's py-2.5 px-5 is roughly this */
+        border-radius: 0.375rem; /* rounded-md */
+        font-weight: 600; /* semibold */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-align: center;
+        line-height: 1.5;
+        display: inline-flex; /* Helps align icon and text if you add icons */
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+    }
+
+    .btn:active {
+        transform: translateY(1px); /* Slight press down effect */
+    }
+
+    .btn:focus, .btn:focus-visible { /* Modern focus state */
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); /* Tailwind's sky-500 focus ring color, adjust if needed */
+    }
+
+    .btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    /* Primary Button (Mode selection, Submit, Next) */
+    .btn-primary {
+        background-color: #0284c7; /* sky-600 */
+        color: white;
+        border-color: #0284c7; /* sky-600 */
+    }
+    .btn-primary:hover {
+        background-color: #0369a1; /* sky-700 */
+        border-color: #0369a1; /* sky-700 */
+    }
+    .btn-primary:active {
+        background-color: #075985; /* sky-800 */
+        border-color: #075985; /* sky-800 */
+    }
+
+    .mode-btn.mode-btn-active {
+        background-color: #0369a1; /* sky-700 */
+        border-color: #0369a1; /* sky-700 */
+        color: white;
+    }
+
+    /* Clear Canvas Button */
+    #clearCanvasBtn.btn {
+        background-color: #f8fafc; /* slate-50 */
+        color: #0ea5e9; /* sky-500 */
+        border: 1px solid #cbd5e1; /* slate-300 */
+    }
+    #clearCanvasBtn.btn:hover {
+        background-color: #f1f5f9; /* slate-100 */
+        border-color: #94a3b8; /* slate-400 */
+        color: #0284c7; /* sky-600 */
+    }
+
+    /* Success Button (Report Correct) */
+    .btn-success {
+        background-color: #22c55e; /* green-500 */
+        color: white;
+        border-color: #22c55e; /* green-500 */
+    }
+    .btn-success:hover {
+        background-color: #16a34a; /* green-600 */
+        border-color: #16a34a; /* green-600 */
+    }
+
+    /* Danger Button (Report Incorrect) */
+    .btn-danger {
+        background-color: #ef4444; /* red-500 */
+        color: white;
+        border-color: #ef4444; /* red-500 */
+    }
+    .btn-danger:hover {
+        background-color: #dc2626; /* red-600 */
+        border-color: #dc2626; /* red-600 */
+    }
+
+    /* Canvas Styling */
+    #drawingCanvas {
+        touch-action: none; 
+        max-width: 100%;
+    }
+    #canvas-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Question Area Enhancement */
+    #question-area {
+        letter-spacing: 0.05em; 
+        line-height: 1.5; 
+    }
+    /* Style for the specific character/word in the question (original for zhuyin mode) */
+    #question-area .text-blue-600 { 
+        font-size: 1.4em; 
+        font-weight: 700; 
+        color: #2563eb; 
+        padding: 0 0.1em;
+        display: inline-block; 
+        transform: scale(1.1); 
+    }
+    /* Style for the Zhuyin placeholder in 'fill' mode */
+    .zhuyin-fill-placeholder {
+        color: #dc2626; /* red-600 */
+        font-weight: 600; /* semibold */
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        text-underline-offset: 4px;
+        padding: 0 0.15em; /* A little space around zhuyin */
+        background-color: #fef3c7; /* amber-100 for subtle highlight */
+        border-radius: 0.25rem;
+    }
+
+
+    /* Feedback Area */
+    #correct-answer-display {
+        line-height: 1.4;
+        word-break: break-word; 
+    }
+
+    /* Wrong Answers List Styling */
+    #wrong-answers-list li {
+        margin-bottom: 0.75rem; 
+        line-height: 1.6;
+    }
+    #wrong-answers-list li strong {
+        margin-right: 0.3em;
+    }
+    #no-wrong-answers {
+        padding: 1rem 0.75rem;
+        text-align: center;
+        border: 1px dashed #d1d5db; /* gray-300 */
+        border-radius: 0.375rem; /* rounded-md */
+    }
+
+    header h1 {
+        letter-spacing: 0.02em; 
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+</style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 selection:bg-sky-200 selection:text-sky-700">
+    <div class="container mx-auto max-w-3xl w-full bg-white shadow-xl rounded-lg p-6 md:p-8">
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-sky-700">漢字練習</h1>
+            <p class="text-center text-gray-600 mt-2">練習您指定的漢字列表，鞏固學習成果。</p>
+        </header>
+
+        <div id="mode-selection" class="mb-6 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+            <button data-mode="fill" class="btn btn-primary mode-btn">國字填空 (注音提示)</button>
+            <button data-mode="zhuyin" class="btn btn-primary mode-btn">生字注音</button>
+        </div>
+
+        <main id="game-area" class="hidden bg-slate-50 p-6 rounded-lg shadow">
+            <div id="question-area" class="mb-5 p-4 bg-sky-100 rounded-md text-2xl md:text-3xl text-center min-h-[150px] flex flex-col items-center justify-center text-sky-800 font-semibold">
+                請選擇模式開始練習
+            </div>
+
+            <div id="canvas-container" class="mb-5 flex flex-col items-center">
+                <canvas id="drawingCanvas" width="300" height="200" class="border-2 border-gray-400 rounded-md shadow-inner bg-white cursor-crosshair"></canvas>
+                <button id="clearCanvasBtn" class="btn mt-3">清除畫板</button>
+            </div>
+
+            <div id="answer-submission" class="text-center mb-5">
+                <button id="submitAnswerBtn" class="btn btn-primary w-full sm:w-auto">提交答案</button>
+            </div>
+
+            <div id="feedback-area" class="hidden p-4 bg-yellow-100 rounded-md text-center">
+                <p id="correct-answer-display" class="mb-2 text-xl font-semibold text-gray-800"></p>
+                <p class="mb-3 text-gray-700">您答對了嗎？</p>
+                <div class="flex justify-center space-x-3">
+                    <button id="reportCorrectBtn" class="btn btn-success">答對了</button>
+                    <button id="reportIncorrectBtn" class="btn btn-danger">答錯了</button>
+                </div>
+            </div>
+
+            <div id="next-question-area" class="text-center mt-5 hidden">
+                <button id="nextQuestionBtn" class="btn btn-primary w-full sm:w-auto">下一題</button>
+            </div>
+        </main>
+
+        <section id="wrong-answers-section" class="mt-10">
+            <h2 class="text-2xl font-semibold text-sky-600 mb-4 border-b-2 border-sky-200 pb-2">錯題整理</h2>
+            <div id="wrong-answers-list-container">
+                <ul id="wrong-answers-list" class="space-y-2 text-gray-700">
+                    <li id="no-wrong-answers" class="text-gray-500 italic">目前沒有錯題。</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+        <script>
+        const practiceData = [
+            { char: "斜", zhuyin: "ㄒㄧㄝˊ", exampleWord: "斜坡", wordPinyin: "ㄒㄧㄝˊ ㄆㄛ" },
+            { char: "閣", zhuyin: "ㄍㄜˊ", exampleWord: "閣樓", wordPinyin: "ㄍㄜˊ ㄌㄡˊ" },
+            { char: "攤", zhuyin: "ㄊㄢ", exampleWord: "攤販", wordPinyin: "ㄊㄢ ㄈㄢˋ" },
+            { char: "匱", zhuyin: "ㄎㄨㄟˋ", exampleWord: "匱乏", wordPinyin: "ㄎㄨㄟˋ ㄈㄚˊ" },
+            { char: "冥", zhuyin: "ㄇㄧㄥˊ", exampleWord: "冥想", wordPinyin: "ㄇㄧㄥˊ ㄒㄧㄤˇ" },
+            { char: "逢", zhuyin: "ㄈㄥˊ", exampleWord: "相逢", wordPinyin: "ㄒㄧㄤ ㄈㄥˊ" },
+            { char: "徒", zhuyin: "ㄊㄨˊ", exampleWord: "徒弟", wordPinyin: "ㄊㄨˊ ㄉㄧˋ" },
+            { char: "籌", zhuyin: "ㄔㄡˊ", exampleWord: "籌備", wordPinyin: "ㄔㄡˊ ㄅㄟˋ" },
+            { char: "埡", zhuyin: "ㄧㄚˋ", exampleWord: "山埡", wordPinyin: "ㄕㄢ ㄧㄚˋ" },
+            { char: "紮", zhuyin: "ㄓㄚˊ", exampleWord: "紮實", wordPinyin: "ㄓㄚˊ ㄕˊ" },
+            { char: "窸", zhuyin: "ㄒㄧ", exampleWord: "窸窣", wordPinyin: "ㄒㄧ ㄙㄨˋ" },
+            { char: "窣", zhuyin: "ㄙㄨˋ", exampleWord: "窸窣", wordPinyin: "ㄒㄧ ㄙㄨˋ" },
+            { char: "誦", zhuyin: "ㄙㄨㄥˋ", exampleWord: "誦讀", wordPinyin: "ㄙㄨㄥˋ ㄉㄨˊ" },
+            { char: "宇", zhuyin: "ㄩˇ", exampleWord: "宇宙", wordPinyin: "ㄩˇ ㄓㄡˋ" },
+            { char: "宙", zhuyin: "ㄓㄡˋ", exampleWord: "宇宙", wordPinyin: "ㄩˇ ㄓㄡˋ" },
+            { char: "浩", zhuyin: "ㄏㄠˋ", exampleWord: "浩瀚", wordPinyin: "ㄏㄠˋ ㄏㄢˋ" },
+            { char: "瀚", zhuyin: "ㄏㄢˋ", exampleWord: "浩瀚", wordPinyin: "ㄏㄠˋ ㄏㄢˋ" },
+            { char: "瞻", zhuyin: "ㄓㄢ", exampleWord: "瞻仰", wordPinyin: "ㄓㄢ ㄧㄤˇ" },
+            { char: "愚", zhuyin: "ㄩˊ", exampleWord: "愚笨", wordPinyin: "ㄩˊ ㄅㄣˋ" },
+            { char: "汲", zhuyin: "ㄐㄧˊ", exampleWord: "汲取", wordPinyin: "ㄐㄧˊ ㄑㄩˇ" },
+            { char: "庶", zhuyin: "ㄕㄨˋ", exampleWord: "庶民", wordPinyin: "ㄕㄨˋ ㄇㄧㄣˊ" },
+            { char: "鍥", zhuyin: "ㄑㄧㄝˋ", exampleWord: "鍥而不捨", wordPinyin: "ㄑㄧㄝˋ ㄦˊ ㄅㄨˋ ㄕㄜˇ" },
+            { char: "垮", zhuyin: "ㄎㄨㄚˇ", exampleWord: "垮掉", wordPinyin: "ㄎㄨㄚˇ ㄉㄧㄠˋ" },
+            { char: "嶄", zhuyin: "ㄓㄢˇ", exampleWord: "嶄新", wordPinyin: "ㄓㄢˇ ㄒㄧㄣ" },
+            { char: "輩", zhuyin: "ㄅㄟˋ", exampleWord: "先輩", wordPinyin: "ㄒㄧㄢ ㄅㄟˋ" },
+            { char: "赴", zhuyin: "ㄈㄨˋ", exampleWord: "奔赴", wordPinyin: "ㄅㄣ ㄈㄨˋ" },
+            { char: "構", zhuyin: "ㄍㄡˋ", exampleWord: "結構", wordPinyin: "ㄐㄧㄝˊ ㄍㄡˋ" },
+            { char: "諺", zhuyin: "ㄧㄢˋ", exampleWord: "諺語", wordPinyin: "ㄧㄢˋ ㄩˇ" },
+            { char: "羹", zhuyin: "ㄍㄥ", exampleWord: "肉羹", wordPinyin: "ㄖㄡˋ ㄍㄥ" },
+            { char: "坪", zhuyin: "ㄆㄧㄥˊ", exampleWord: "草坪", wordPinyin: "ㄘㄠˇ ㄆㄧㄥˊ" },
+            { char: "斤", zhuyin: "ㄐㄧㄣ", exampleWord: "公斤", wordPinyin: "ㄍㄨㄥ ㄐㄧㄣ" },
+            { char: "貫", zhuyin: "ㄍㄨㄢˋ", exampleWord: "貫徹", wordPinyin: "ㄍㄨㄢˋ ㄔㄜˋ" },
+            { char: "拓", zhuyin: "ㄊㄨㄛˋ", exampleWord: "拓展", wordPinyin: "ㄊㄨㄛˋ ㄓㄢˇ" },
+            { char: "恭", zhuyin: "ㄍㄨㄥ", exampleWord: "恭喜", wordPinyin: "ㄍㄨㄥ ㄒㄧˇ" },
+            { char: "份", zhuyin: "ㄈㄣˋ", exampleWord: "份量", wordPinyin: "ㄈㄣˋ ㄌㄧㄤˋ" },
+            { char: "荊", zhuyin: "ㄐㄧㄥ", exampleWord: "荊棘", wordPinyin: "ㄐㄧㄥ ㄐㄧˊ" },
+            { char: "棘", zhuyin: "ㄐㄧˊ", exampleWord: "荊棘", wordPinyin: "ㄐㄧㄥ ㄐㄧˊ" },
+            { char: "俗", zhuyin: "ㄙㄨˊ", exampleWord: "風俗", wordPinyin: "ㄈㄥ ㄙㄨˊ" },
+            { char: "窘", zhuyin: "ㄐㄩㄥˇ", exampleWord: "窘迫", wordPinyin: "ㄐㄩㄥˇ ㄆㄛˋ" },
+            { char: "溝", zhuyin: "ㄍㄡ", exampleWord: "溝通", wordPinyin: "ㄍㄡ ㄊㄨㄥ" },
+            { char: "闖", zhuyin: "ㄔㄨㄤˇ", exampleWord: "闖關", wordPinyin: "ㄔㄨㄤˇ ㄍㄨㄢ" },
+            { char: "涯", zhuyin: "ㄧㄚˊ", exampleWord: "天涯", wordPinyin: "ㄊㄧㄢ ㄧㄚˊ" },
+            { char: "曙", zhuyin: "ㄕㄨˋ", exampleWord: "曙光", wordPinyin: "ㄕㄨˋ ㄍㄨㄤ" },
+            { char: "帆", zhuyin: "ㄈㄢ", exampleWord: "帆船", wordPinyin: "ㄈㄢ ㄔㄨㄢˊ" },
+            { char: "槳", zhuyin: "ㄐㄧㄤˇ", exampleWord: "船槳", wordPinyin: "ㄔㄨㄢˊ ㄐㄧㄤˇ" }
+        ];
+
+        let currentMode = null;
+        let currentQuestion = null;
+        let wrongAnswers = [];
+
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const gameArea = document.getElementById('game-area');
+        const questionArea = document.getElementById('question-area');
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+        const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+        const feedbackArea = document.getElementById('feedback-area');
+        const correctAnswerDisplay = document.getElementById('correct-answer-display');
+        const reportCorrectBtn = document.getElementById('reportCorrectBtn');
+        const reportIncorrectBtn = document.getElementById('reportIncorrectBtn');
+        const nextQuestionArea = document.getElementById('next-question-area');
+        const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+        const wrongAnswersList = document.getElementById('wrong-answers-list');
+        const noWrongAnswersMsg = document.getElementById('no-wrong-answers');
+
+        let drawing = false;
+
+        function setupCanvas() {
+            // Make canvas responsive to its container, but with a max width/height
+            const containerWidth = canvas.parentElement.clientWidth * 0.9; // Use 90% of container width
+            const defaultSize = Math.min(containerWidth, 400); // Max canvas size 400px
+
+            canvas.width = defaultSize;
+            canvas.height = defaultSize * 0.67; // Maintain aspect ratio (e.g., 300x200 becomes 400x268)
+            
+            ctx.lineWidth = Math.max(4, canvas.width / 75); // Scale line width, min 4px
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#333333'; // Dark gray for drawing
+            clearCanvas(); 
+        }
+
+
+        function getEventPosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (event.touches && event.touches.length > 0) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else if (event.changedTouches && event.changedTouches.length > 0) { // For touchend
+                clientX = event.changedTouches[0].clientX;
+                clientY = event.changedTouches[0].clientY;
+            } else { // Mouse events
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault(); // Prevent scrolling on touch
+            drawing = true;
+            const pos = getEventPosition(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function stopDrawing(e) {
+            e.preventDefault();
+            if (drawing) {
+                // ctx.closePath(); // Not strictly necessary for line drawing, but good practice
+                drawing = false;
+            }
+        }
+
+        function draw(e) {
+            e.preventDefault();
+            if (!drawing) return;
+            const pos = getEventPosition(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Event listeners for drawing
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing); // Stop if mouse leaves canvas
+        canvas.addEventListener('mousemove', draw);
+        
+        // Touch events
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing, { passive: false });
+        canvas.addEventListener('touchcancel', stopDrawing, { passive: false }); // Handle touch cancel
+        canvas.addEventListener('touchmove', draw, { passive: false });
+
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentMode = button.dataset.mode;
+                modeButtons.forEach(btn => {
+                    btn.classList.remove('mode-btn-active', 'bg-sky-700', 'border-sky-700');
+                    btn.classList.add('bg-sky-600', 'border-sky-600');
+                });
+                button.classList.add('mode-btn-active', 'bg-sky-700', 'border-sky-700');
+                button.classList.remove('bg-sky-600', 'border-sky-600');
+
+                gameArea.classList.remove('hidden');
+                setupCanvas(); // Setup canvas after game area is visible
+
+                feedbackArea.classList.add('hidden');
+                nextQuestionArea.classList.add('hidden');
+                submitAnswerBtn.classList.remove('hidden');
+                submitAnswerBtn.disabled = false;
+                canvas.style.pointerEvents = 'auto'; // Re-enable drawing
+                loadQuestion();
+            });
+        });
+
+        function loadQuestion() {
+            clearCanvas();
+            feedbackArea.classList.add('hidden');
+            nextQuestionArea.classList.add('hidden');
+            submitAnswerBtn.classList.remove('hidden');
+            submitAnswerBtn.disabled = false;
+            canvas.style.pointerEvents = 'auto';
+
+            const randomIndex = Math.floor(Math.random() * practiceData.length);
+            currentQuestion = practiceData[randomIndex];
+
+            if (currentMode === 'fill') {
+                let word = currentQuestion.exampleWord;
+                let charToGuess = currentQuestion.char;
+                let zhuyinForChar = currentQuestion.zhuyin;
+
+                if (typeof word === 'string' && typeof charToGuess === 'string' && word.includes(charToGuess)) {
+                    // Escape charToGuess for use in RegExp, in case it contains special characters (though unlikely for Chinese chars)
+                    const escapedCharToGuess = charToGuess.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    // Replace the character to be guessed with its Zhuyin, styled as a placeholder
+                    const questionWordHtml = word.replace(
+                        new RegExp(escapedCharToGuess, 'g'), // 'g' for global replace if char appears multiple times
+                        `<span class="zhuyin-fill-placeholder">${zhuyinForChar}</span>`
+                    );
+                    // Update the question area HTML
+                    questionArea.innerHTML = `
+                        <span class="block text-xl text-sky-700 mb-2">請根據詞語中的注音提示，寫出正確的國字：</span>
+                        <div class="my-2 p-3 bg-gray-50 rounded-md text-3xl md:text-4xl text-center">${questionWordHtml}</div>
+                        <span class="block text-sm text-gray-500 mt-1">(在畫板上寫出<span class="text-red-600 font-semibold">紅色注音</span>標示的那個國字)</span>`;
+                } else {
+                    questionArea.innerHTML = `數據錯誤或無法處理該題目。<br>題目: ${word}, 字: ${charToGuess}`;
+                    console.error("Data error in 'fill' mode:", currentQuestion);
+                }
+            } else if (currentMode === 'zhuyin') {
+                questionArea.innerHTML = `寫出注音：<span class="text-blue-600">${currentQuestion.char}</span>`;
+            }
+        }
+
+        submitAnswerBtn.addEventListener('click', () => {
+            if (!currentQuestion) return;
+            let correctAnswerText;
+            if (currentMode === 'fill') {
+                correctAnswerText = `正確答案：<strong class="text-green-700 text-2xl">${currentQuestion.char}</strong> (注音：${currentQuestion.zhuyin})`;
+            } else { // zhuyin mode
+                correctAnswerText = `正確注音：<strong class="text-green-700 text-2xl">${currentQuestion.zhuyin}</strong> (國字：${currentQuestion.char})`;
+            }
+            correctAnswerDisplay.innerHTML = correctAnswerText; // Use innerHTML for strong tag
+            
+            feedbackArea.classList.remove('hidden');
+            submitAnswerBtn.classList.add('hidden'); // Hide submit button
+            submitAnswerBtn.disabled = true; // Disable submit button
+            canvas.style.pointerEvents = 'none'; // Disable drawing on canvas
+        });
+
+        reportCorrectBtn.addEventListener('click', () => handleFeedback(true));
+        reportIncorrectBtn.addEventListener('click', () => handleFeedback(false));
+
+        function handleFeedback(isCorrect) {
+            if (!isCorrect) {
+                if (currentMode === 'fill') {
+                    wrongAnswers.push({
+                        type: '國字填空 (注音提示)',
+                        // Record the word, the character that was prompted via Zhuyin, and its Zhuyin.
+                        question: `詞語：${currentQuestion.exampleWord} (提示 "${currentQuestion.zhuyin}" 需填寫國字 "${currentQuestion.char}")`,
+                        answer: currentQuestion.char
+                    });
+                } else { // zhuyin mode
+                    wrongAnswers.push({
+                        type: '生字注音',
+                        question: `題目：${currentQuestion.char}`,
+                        answer: currentQuestion.zhuyin
+                    });
+                }
+            }
+            displayWrongAnswers();
+            feedbackArea.classList.add('hidden'); // Hide feedback buttons
+            nextQuestionArea.classList.remove('hidden'); // Show next question button
+        }
+        
+        nextQuestionBtn.addEventListener('click', () => {
+            if (currentMode) {
+                 loadQuestion();
+            } else {
+                // Should not happen if UI flow is correct, but as a fallback
+                questionArea.innerHTML = "請先選擇一個練習模式。";
+            }
+        });
+
+        function displayWrongAnswers() {
+            wrongAnswersList.innerHTML = ''; // Clear previous list
+            if (wrongAnswers.length === 0) {
+                if (noWrongAnswersMsg.classList.contains('hidden')) { // Show if hidden
+                    noWrongAnswersMsg.classList.remove('hidden');
+                }
+                // Ensure it's appended if not already there (e.g. if list was cleared and it wasn't part of it)
+                if (!wrongAnswersList.contains(noWrongAnswersMsg)) {
+                     wrongAnswersList.appendChild(noWrongAnswersMsg);
+                }
+            } else {
+                noWrongAnswersMsg.classList.add('hidden'); // Hide "no wrong answers" message
+                wrongAnswers.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.className = "p-3 bg-red-50 rounded-md border border-red-200 shadow-sm"; 
+                    listItem.innerHTML = `<strong class="text-red-800">${item.type}</strong><br>${item.question}<br>正確答案：<span class="font-bold text-red-700">${item.answer}</span>`;
+                    wrongAnswersList.appendChild(listItem);
+                });
+            }
+        }
+
+        // Initial setup on load
+        window.addEventListener('load', () => {
+            // Initial styling for canvas context (though setupCanvas will override some)
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            displayWrongAnswers(); // Display any stored wrong answers (e.g. from a previous session if implemented)
+        });
+
+        // Adjust canvas on resize
+        window.addEventListener('resize', () => {
+            if (!gameArea.classList.contains('hidden')) { // Only if game area is visible
+                setupCanvas();
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -19,7 +19,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease-in-out;
         }
-        .card:hover {
+        .card:hover:not(.no-hover) {
             transform: translateY(-5px);
         }
         .btn {
@@ -29,92 +29,82 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
             cursor: pointer;
             border: none;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-primary {
-            background-color: #3b82f6; /* Blue-500 */
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #2563eb; /* Blue-600 */
-            transform: translateY(-2px);
-        }
-        .btn-secondary {
-            background-color: #6b7280; /* Gray-500 */
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #4b5563; /* Gray-600 */
-            transform: translateY(-2px);
-        }
-        .btn-green {
-            background-color: #10b981; /* Emerald-500 */
-            color: white;
-        }
-        .btn-green:hover {
-            background-color: #059669; /* Emerald-600 */
-        }
-        .btn-red {
-            background-color: #ef4444; /* Red-500 */
-            color: white;
-        }
-        .btn-red:hover {
-            background-color: #dc2626; /* Red-600 */
-        }
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover { background-color: #2563eb; transform: translateY(-2px); }
+        .btn-secondary { background-color: #6b7280; color: white; }
+        .btn-secondary:hover { background-color: #4b5563; transform: translateY(-2px); }
+        .btn-green { background-color: #10b981; color: white; }
+        .btn-green:hover { background-color: #059669; }
+        .btn-red { background-color: #ef4444; color: white; }
+        .btn-red:hover { background-color: #dc2626; }
+        .btn-orange { background-color: #f97316; color: white; }
+        .btn-orange:hover { background-color: #ea580c; }
+        .btn-purple { background-color: #8b5cf6; color: white; } /* Purple for comprehensive */
+        .btn-purple:hover { background-color: #7c3aed; }
+        .btn-teal { background-color: #14b8a6; color: white; } /* Teal for synonym/antonym */
+        .btn-teal:hover { background-color: #0d9488; }
+
         .option-btn {
             width: 100%;
             text-align: left;
-            background-color: #e5e7eb; /* Gray-200 */
-            color: #1f2937; /* Gray-800 */
-            margin-bottom: 0.5rem;
+            background-color: #e5e7eb; color: #1f2937;
+            margin-bottom: 0.5rem; padding: 0.75rem;
         }
-        .option-btn:hover {
-            background-color: #d1d5db; /* Gray-300 */
-        }
-        .option-btn.correct {
-            background-color: #34d399; /* Emerald-400 */
-            color: white;
-            border: 2px solid #059669;
-        }
-        .option-btn.incorrect {
-            background-color: #f87171; /* Red-400 */
-            color: white;
-            border: 2px solid #dc2626;
-        }
-        .disabled-options .option-btn:not(.correct):not(.incorrect) {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        .pinyin {
-            color: #6b7280; /* Gray-500 */
-            font-style: italic;
-        }
-        #feedbackMessage {
-            min-height: 2.5rem; /* Ensure space for message */
-        }
+        .option-btn:hover { background-color: #d1d5db; }
+        .option-btn.correct { background-color: #34d399; color: white; border: 2px solid #059669; }
+        .option-btn.incorrect { background-color: #f87171; color: white; border: 2px solid #dc2626; }
+        .disabled-options .option-btn:not(.correct):not(.incorrect) { opacity: 0.7; pointer-events: none; }
+
+        .bopomofo { color: #4b5563; font-size: 1.125rem; }
+        #feedbackMessage { min-height: 2.5rem; font-size: 1.125rem; }
+        .sentence-blank { font-weight: bold; color: #dc2626; }
+        .hidden-meaning #cardMeaning, .hidden-meaning #cardSentence,
+        .hidden-meaning #cardSynonymsContainer, .hidden-meaning #cardAntonymsContainer { display: none; } /* Updated IDs */
+        .synonym-antonym-label { font-weight: 500; color: #374151; margin-top: 0.5rem;}
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body class="flex flex-col items-center justify-center min-h-screen p-4 selection:bg-blue-200">
 
-    <div id="mainContainer" class="w-full max-w-2xl">
+    <div id="mainContainer" class="w-full max-w-3xl">
         <header class="text-center mb-8">
             <h1 class="text-4xl font-bold text-blue-600">成語互動練習</h1>
         </header>
 
-        <div id="modeSelection" class="card p-6 md:p-8 text-center">
+        <div id="modeSelection" class="card p-6 md:p-8 text-center no-hover">
             <h2 class="text-2xl font-semibold mb-6 text-gray-700">選擇練習模式</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <button id="startCardModeBtn" class="btn btn-primary">卡片模式</button>
                 <button id="startQuizIdiomToMeaningBtn" class="btn btn-primary">看成語選意思</button>
                 <button id="startQuizMeaningToIdiomBtn" class="btn btn-primary">看意思選成語</button>
+                <button id="startFillInTheBlankBtn" class="btn btn-primary">例句填空</button>
+                <button id="startFindSynonymBtn" class="btn btn-teal">找近義詞</button>
+                <button id="startFindAntonymBtn" class="btn btn-teal">找反義詞</button>
+                <button id="startComprehensiveBtn" class="btn btn-purple col-span-1 sm:col-span-2 md:col-span-3">綜合練習</button>
+                <button id="startIncorrectReviewBtn" class="btn btn-orange col-span-1 sm:col-span-2 md:col-span-3 hidden">練習錯題</button>
             </div>
         </div>
 
-        <div id="cardMode" class="hidden card p-6 md:p-8">
-            <h2 class="text-2xl font-semibold mb-6 text-center text-gray-700">卡片模式</h2>
-            <div id="cardContent" class="mb-6 p-6 bg-blue-50 rounded-lg min-h-[200px] flex flex-col justify-center">
+        <div id="cardMode" class="hidden card p-6 md:p-8 no-hover">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700">卡片模式</h2>
+                <button id="toggleMeaningBtn" class="btn btn-secondary btn-sm py-1 px-3 text-sm">隱藏意思</button>
+            </div>
+            <div id="cardContent" class="mb-6 p-6 bg-blue-50 rounded-lg min-h-[300px] flex flex-col justify-center">
                 <h3 id="cardIdiom" class="text-3xl font-bold text-blue-700 mb-2"></h3>
-                <p id="cardPinyin" class="text-lg pinyin mb-3"></p>
-                <p id="cardMeaning" class="text-gray-700 text-base"></p>
+                <p id="cardBopomofo" class="bopomofo mb-4"></p>
+                <p id="cardMeaning" class="text-gray-700 text-base mb-3"></p>
+                <p id="cardSentence" class="text-sm text-gray-600 italic mb-3"></p>
+                <div id="cardSynonymsContainer" class="mb-2"> {/* Changed ID */}
+                    <span class="synonym-antonym-label">近義詞：</span><span id="cardSynonyms" class="text-sm text-gray-600"></span> {/* Changed ID */}
+                </div>
+                <div id="cardAntonymsContainer"> {/* Changed ID */}
+                    <span class="synonym-antonym-label">反義詞：</span><span id="cardAntonyms" class="text-sm text-gray-600"></span> {/* Changed ID */}
+                </div>
             </div>
             <div class="flex justify-between items-center mb-4">
                 <button id="prevCardBtn" class="btn btn-secondary">上一張</button>
@@ -124,14 +114,14 @@
             <button id="backToMenuFromCardBtn" class="btn btn-primary w-full mt-4">返回主選單</button>
         </div>
 
-        <div id="quizMode" class="hidden card p-6 md:p-8">
-            <h2 id="quizTitle" class="text-2xl font-semibold mb-2 text-center text-gray-700">選擇題模式</h2>
+        <div id="quizMode" class="hidden card p-6 md:p-8 no-hover">
+            <h2 id="quizTitle" class="text-2xl font-semibold mb-2 text-center text-gray-700">測驗模式</h2>
             <p id="quizProgress" class="text-sm text-gray-500 text-center mb-4"></p>
-            <div id="questionArea" class="mb-6 p-6 bg-yellow-50 rounded-lg min-h-[100px] flex items-center justify-center">
+            <div id="questionArea" class="mb-6 p-6 bg-yellow-50 rounded-lg min-h-[120px] flex flex-col items-center justify-center text-center">
                 <p id="questionText" class="text-xl font-medium text-yellow-800"></p>
+                <p id="questionBopomofo" class="bopomofo text-yellow-700 mt-1"></p>
             </div>
-            <div id="optionsArea" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                </div>
+            <div id="optionsArea" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4"></div>
             <div id="feedbackMessage" class="text-center font-medium mb-4"></div>
             <button id="nextQuestionBtn" class="btn btn-green w-full mb-4 hidden">下一題</button>
             <button id="backToMenuFromQuizBtn" class="btn btn-primary w-full">返回主選單</button>
@@ -139,59 +129,108 @@
     </div>
 
     <script>
+        // 成語題庫 (近義/反義詞僅包含圖片中明確標示者)
         const idioms = [
-            { idiom: "融會貫通", meaning: "將各種相關的知識或事物加以融合、貫穿，進而獲得全面通徹的領會。", pinyin: "róng huì guàn tōng" },
-            { idiom: "如雷貫耳", meaning: "比喻人名氣很大，眾所共聞。", pinyin: "rú léi guàn ěr" },
-            { idiom: "半斤八兩", meaning: "比喻彼此相當，不相上下。", pinyin: "bàn jīn bā liǎng" },
-            { idiom: "全神貫注", meaning: "精神高度集中，注意力完全凝聚。", pinyin: "quán shén guàn zhù" },
-            { idiom: "舉世聞名", meaning: "全世界都知道，形容非常著名。", pinyin: "jǔ shì wén míng" },
-            { idiom: "束之高閣", meaning: "把東西捆起來，放置於閣樓上。比喻棄置不用。", pinyin: "shù zhī gāo gé" },
-            { idiom: "家徒四壁", meaning: "家中只剩下四周的牆壁。形容家境極為貧困。", pinyin: "jiā tú sì bì" },
-            { idiom: "一籌莫展", meaning: "一點計策也施展不出來。比喻毫無辦法。", pinyin: "yī chóu mò zhǎn" },
-            { idiom: "赴湯蹈火", meaning: "比喻奮不顧身，不避艱險。", pinyin: "fù tāng dǎo huǒ" },
-            { idiom: "大智若愚", meaning: "具有極高智慧的人，往往表面上看來似乎愚笨，不炫耀自己。", pinyin: "dà zhì ruò yú" },
-            { idiom: "高瞻遠矚", meaning: "看得高遠，形容見識遠大，考慮周詳。", pinyin: "gāo zhān yuǎn zhǔ" },
-            { idiom: "披荊斬棘", meaning: "比喻在創業或前進過程中清除障礙，克服困難。", pinyin: "pī jīng zhǎn jí" },
-            { idiom: "移風易俗", meaning: "改善不良的社會風氣和習俗。", pinyin: "yí fēng yì sú" },
-            { idiom: "咫尺天涯", meaning: "比喻距離雖近，卻像遠在天邊一樣難以相見。", pinyin: "zhǐ chǐ tiān yá" },
-            { idiom: "一帆風順", meaning: "船掛滿帆，一路順風。比喻非常順利，毫無阻礙。", pinyin: "yī fān fēng shùn" }
+            { idiom: "融會貫通", bopomofo: "ㄖㄨㄥˊ ㄏㄨㄟˋ ㄍㄨㄢˋ ㄊㄨㄥ", meaning: "將各種相關的知識或事物加以融合、貫穿，進而獲得全面通徹的領會。", sentence: "讀書若能 __BLANK__ ，便可以將所學靈活運用。", blankWord: "融會貫通", synonyms: ["心領神會"], antonyms: [] }, // Image 1: 近義 心領神會
+            { idiom: "如雷貫耳", bopomofo: "ㄖㄨˊ ㄌㄟˊ ㄍㄨㄢˋ ㄦˇ", meaning: "比喻人名氣很大，眾所共聞。", sentence: "這位大畫家的名聲早已 __BLANK__ ，無人不曉。", blankWord: "如雷貫耳", synonyms: [], antonyms: [] },
+            { idiom: "半斤八兩", bopomofo: "ㄅㄢˋ ㄐㄧㄣ ㄅㄚ ㄌㄧㄤˇ", meaning: "比喻彼此相當，不相上下。", sentence: "他們兩隊實力 __BLANK__ ，看來會是場激烈的比賽。", blankWord: "半斤八兩", synonyms: ["不相上下"], antonyms: ["天差地遠"] }, // Image 1: (不相上下 is part of its definition), 反義 天差地遠
+            { idiom: "全神貫注", bopomofo: "ㄑㄩㄢˊ ㄕㄣˊ ㄍㄨㄢˋ ㄓㄨˋ", meaning: "精神高度集中，注意力完全凝聚。", sentence: "他 __BLANK__ 地聆聽老師講課，不錯過任何細節。", blankWord: "全神貫注", synonyms: [], antonyms: [] },
+            { idiom: "舉世聞名", bopomofo: "ㄐㄩˇ ㄕˋ ㄨㄣˊ ㄇㄧㄥˊ", meaning: "全世界都知道，形容非常著名。", sentence: "這座城市的夜景 __BLANK__ ，吸引了許多遊客。", blankWord: "舉世聞名", synonyms: [], antonyms: [] },
+            { idiom: "全力以赴", bopomofo: "ㄑㄩㄢˊ ㄌㄧˋ ㄧˇ ㄈㄨˋ", meaning: "用盡全部的力量去做某件事情。", sentence: "無論未來面臨多少挑戰，我都會 __BLANK__ ，實現夢想。", blankWord: "全力以赴", synonyms: [], antonyms: [] },
+            { idiom: "無怨無悔", bopomofo: "ㄨˊ ㄩㄢˋ ㄨˊ ㄏㄨㄟˇ", meaning: "沒有任何怨恨和後悔。", sentence: "奶奶當志工雖然工作繁重，卻 __BLANK__ 、樂此不疲。", blankWord: "無怨無悔", synonyms: [], antonyms: [] },
+            { idiom: "束之高閣", bopomofo: "ㄕㄨˋ ㄓ ㄍㄠ ㄍㄜˊ", meaning: "把東西捆起來，放置於閣樓上。比喻棄置不用。", sentence: "這個計畫因資金不足，只好暫時 __BLANK__ 。", blankWord: "束之高閣", synonyms: [], antonyms: ["物盡其用"] }, // Image 3: 反義 物盡其用
+            { idiom: "冥頑不靈", bopomofo: "ㄇㄧㄥˊ ㄨㄢˊ ㄅㄨˋ ㄌㄧㄥˊ", meaning: "愚昧頑固而不通情理。", sentence: "有些人就是 __BLANK__ ，怎麼勸也聽不進去。", blankWord: "冥頑不靈", synonyms: [], antonyms: [] },
+            { idiom: "家徒四壁", bopomofo: "ㄐㄧㄚ ㄊㄨˊ ㄙˋ ㄅㄧˋ", meaning: "家中只剩下四周的牆壁。形容家境極為貧困。", sentence: "他早年 __BLANK__ ，卻靠著毅力白手起家。", blankWord: "家徒四壁", synonyms: ["一貧如洗"], antonyms: ["腰纏萬貫"] }, // Image 3: 近義 一貧如洗, 反義 腰纏萬貫
+            { idiom: "一籌莫展", bopomofo: "ㄧˋ ㄔㄡˊ ㄇㄛˋ ㄓㄢˇ", meaning: "一點計策也施展不出來。比喻毫無辦法。", sentence: "面對這個複雜的問題，他一時 __BLANK__ 。", blankWord: "一籌莫展", synonyms: ["束手無策"], antonyms: ["胸有成竹"] }, // Image 3: 近義 束手無策, 反義 胸有成竹
+            { idiom: "來龍去脈", bopomofo: "ㄌㄞˊ ㄌㄨㄥˊ ㄑㄩˋ ㄇㄞˋ", meaning: "比喻事情的始末和原委。", sentence: "警方正在調查事件的 __BLANK__ 。", blankWord: "來龍去脈", synonyms: ["前因後果"], antonyms: [] }, // Image 3: 近義 前因後果
+            { idiom: "日復一日", bopomofo: "ㄖˋ ㄈㄨˋ ㄧˊ ㄖˋ", meaning: "一天又一天，形容日子重複或時間流逝。", sentence: "他 __BLANK__ 地辛勤工作，希望能改善家裡的經濟狀況。", blankWord: "日復一日", synonyms: [], antonyms: [] },
+            { idiom: "苦不堪言", bopomofo: "ㄎㄨˇ ㄅㄨˋ ㄎㄢ ㄧㄢˊ", meaning: "痛苦得無法用言語來形容。", sentence: "牙痛起來真是讓人 __BLANK__ 。", blankWord: "苦不堪言", synonyms: [], antonyms: [] },
+            { idiom: "家常便飯", bopomofo: "ㄐㄧㄚ ㄔㄤˊ ㄅㄧㄢˋ ㄈㄢˋ", meaning: "家中的日常飯食。比喻很平常、很普通的事。", sentence: "對他而言，熬夜加班已經是 __BLANK__ 了。", blankWord: "家常便飯", synonyms: [], antonyms: [] },
+            { idiom: "慎思明辨", bopomofo: "ㄕㄣˋ ㄙ ㄇㄧㄥˊ ㄅㄧㄢˋ", meaning: "謹慎思考，明白分辨是非。", sentence: "在資訊爆炸的時代，我們更需要 __BLANK__ 的能力。", blankWord: "慎思明辨", synonyms: [], antonyms: [] },
+            { idiom: "大開眼界", bopomofo: "ㄉㄚˋ ㄎㄞ ㄧㄢˇ ㄐㄧㄝˋ", meaning: "開闊視野，增長見識。", sentence: "這次的博物館參觀，真讓我 __BLANK__ 。", blankWord: "大開眼界", synonyms: [], antonyms: [] },
+            { idiom: "毫無頭緒", bopomofo: "ㄏㄠˊ ㄨˊ ㄊㄡˊ ㄒㄩˋ", meaning: "一點線索或辦法也沒有。", sentence: "對於這個謎題，我目前仍然 __BLANK__ 。", blankWord: "毫無頭緒", synonyms: [], antonyms: [] },
+            { idiom: "洗耳恭聽", bopomofo: "ㄒㄧˇ ㄦˇ ㄍㄨㄥ ㄊㄧㄥ", meaning: "比喻專心恭敬地聽別人說話。", sentence: "您有什麼寶貴意見，我一定 __BLANK__ 。", blankWord: "洗耳恭聽", synonyms: [], antonyms: ["充耳不聞"] }, // Image 6: 反義 充耳不聞
+            { idiom: "負荊請罪", bopomofo: "ㄈㄨˋ ㄐㄧㄥ ㄑㄧㄥˇ ㄗㄨㄟˋ", meaning: "背著荊條向對方承認錯誤，請求責罰。", sentence: "他知道自己錯了，便登門 __BLANK__ 。", blankWord: "負荊請罪", synonyms: [], antonyms: [] },
+            { idiom: "披荊斬棘", bopomofo: "ㄆㄧ ㄐㄧㄥ ㄓㄢˇ ㄐㄧˊ", meaning: "比喻克服困難，掃除障礙。", sentence: "他們一路 __BLANK__ ，終於成功建立了事業。", blankWord: "披荊斬棘", synonyms: ["乘風破浪"], antonyms: ["畏縮不前"] }, // Image 7: 近義 乘風破浪, 反義 畏縮不前
+            { idiom: "移風易俗", bopomofo: "ㄧˊ ㄈㄥ ㄧˋ ㄙㄨˊ", meaning: "改善不良的社會風氣和習俗。", sentence: "教育是 __BLANK__ 的重要手段。", blankWord: "移風易俗", synonyms: [], antonyms: [] },
+            { idiom: "咫尺天涯", bopomofo: "ㄓˇ ㄔˇ ㄊㄧㄢ ㄧㄚˊ", meaning: "比喻距離雖近，卻像遠在天邊一樣。", sentence: "他們倆雖是鄰居，卻因忙碌而 __BLANK__ ，難得見面。", blankWord: "咫尺天涯", synonyms: [], antonyms: ["天涯若比鄰"] }, // Image 7: 反義 天涯若比鄰
+            { idiom: "一帆風順", bopomofo: "ㄧˋ ㄈㄢˊ ㄈㄥ ㄕㄨㄣˋ", meaning: "比喻非常順利，毫無阻礙。", sentence: "祝你此行 __BLANK__ ，收穫滿滿。", blankWord: "一帆風順", synonyms: ["一路順風"], antonyms: ["一波三折"] }, // Image 7: 近義 一路順風, 反義 一波三折
+            { idiom: "高瞻遠矚", bopomofo: "ㄍㄠ ㄓㄢ ㄩㄢˇ ㄓㄨˇ", meaning: "看得高遠，形容見識遠大。", sentence: "制定國家政策需要 __BLANK__ 的眼光。", blankWord: "高瞻遠矚", synonyms: ["目光如炬"], antonyms: ["目光如豆"] }, // Image 8: 近義 目光如炬, 反義 目光如豆
+            { idiom: "大智若愚", bopomofo: "ㄉㄚˋ ㄓˋ ㄖㄨㄛˋ ㄩˊ", meaning: "有極高智慧的人，表面上看起來似乎愚笨。", sentence: "他平時不多話，其實是 __BLANK__ ，深藏不露。", blankWord: "大智若愚", synonyms: ["深藏不露"], antonyms: ["鋒芒畢露"] }, // Image 8: 近義 深藏不露, 反義 鋒芒畢露
+            { idiom: "赴湯蹈火", bopomofo: "ㄈㄨˋ ㄊㄤ ㄉㄠˋ ㄏㄨㄛˇ", meaning: "比喻奮不顧身，不避艱險。", sentence: "為了救人，消防員們個個 __BLANK__ 。", blankWord: "赴湯蹈火", synonyms: ["奮不顧身"], antonyms: ["貪生怕死"] }  // Image 8: 近義 奮不顧身, 反義 貪生怕死
         ];
 
         let currentIdiomIndex = 0;
-        let currentQuizIdioms = [];
-        let currentQuestionIndex = 0;
+        let currentQuizSet = [];
+        let currentQuestionData = {}; 
+        let currentQuestionDisplayIndex = 0;
         let score = 0;
-        let quizType = ''; // 'idiomToMeaning' or 'meaningToIdiom'
+        let activeQuizType = '';
         let autoNextTimer = null;
+        let incorrectlyAnsweredIdioms = JSON.parse(localStorage.getItem('incorrectlyAnsweredIdioms')) || [];
 
-        // DOM Elements
+        // DOM Elements (shortened for brevity, assume they are correctly fetched as in previous version)
         const modeSelectionDiv = document.getElementById('modeSelection');
         const cardModeDiv = document.getElementById('cardMode');
         const quizModeDiv = document.getElementById('quizMode');
-
-        const startCardModeBtn = document.getElementById('startCardModeBtn');
-        const startQuizIdiomToMeaningBtn = document.getElementById('startQuizIdiomToMeaningBtn');
-        const startQuizMeaningToIdiomBtn = document.getElementById('startQuizMeaningToIdiomBtn');
-
-        // Card Mode Elements
         const cardIdiomEl = document.getElementById('cardIdiom');
-        const cardPinyinEl = document.getElementById('cardPinyin');
+        const cardBopomofoEl = document.getElementById('cardBopomofo');
         const cardMeaningEl = document.getElementById('cardMeaning');
+        const cardSentenceEl = document.getElementById('cardSentence');
+        const cardSynonymsEl = document.getElementById('cardSynonyms'); // Direct span
+        const cardAntonymsEl = document.getElementById('cardAntonyms'); // Direct span
+        const toggleMeaningBtn = document.getElementById('toggleMeaningBtn');
         const prevCardBtn = document.getElementById('prevCardBtn');
         const nextCardBtn = document.getElementById('nextCardBtn');
         const cardCounterEl = document.getElementById('cardCounter');
         const backToMenuFromCardBtn = document.getElementById('backToMenuFromCardBtn');
-
-        // Quiz Mode Elements
         const quizTitleEl = document.getElementById('quizTitle');
         const questionTextEl = document.getElementById('questionText');
+        const questionBopomofoEl = document.getElementById('questionBopomofo');
         const optionsAreaEl = document.getElementById('optionsArea');
         const feedbackMessageEl = document.getElementById('feedbackMessage');
         const nextQuestionBtn = document.getElementById('nextQuestionBtn');
         const backToMenuFromQuizBtn = document.getElementById('backToMenuFromQuizBtn');
         const quizProgressEl = document.getElementById('quizProgress');
+        const startIncorrectReviewBtn = document.getElementById('startIncorrectReviewBtn');
+        // Buttons for starting modes
+        const startCardModeBtn = document.getElementById('startCardModeBtn');
+        const startQuizIdiomToMeaningBtn = document.getElementById('startQuizIdiomToMeaningBtn');
+        const startQuizMeaningToIdiomBtn = document.getElementById('startQuizMeaningToIdiomBtn');
+        const startFillInTheBlankBtn = document.getElementById('startFillInTheBlankBtn');
+        const startFindSynonymBtn = document.getElementById('startFindSynonymBtn');
+        const startFindAntonymBtn = document.getElementById('startFindAntonymBtn');
+        const startComprehensiveBtn = document.getElementById('startComprehensiveBtn');
 
-        // Utility function to shuffle an array
+
+        function updateIncorrectReviewButton() {
+            if (incorrectlyAnsweredIdioms.length > 0) {
+                startIncorrectReviewBtn.classList.remove('hidden');
+                startIncorrectReviewBtn.textContent = `練習錯題 (${incorrectlyAnsweredIdioms.length})`;
+            } else {
+                startIncorrectReviewBtn.classList.add('hidden');
+            }
+        }
+
+        function saveIncorrectlyAnsweredIdioms() {
+            localStorage.setItem('incorrectlyAnsweredIdioms', JSON.stringify(incorrectlyAnsweredIdioms));
+            updateIncorrectReviewButton();
+        }
+
+        function addIncorrectIdiom(idiomData, questionType) {
+            const uniqueId = idiomData.idiom + "_" + questionType;
+            if (!incorrectlyAnsweredIdioms.some(item => (item.idiomData.idiom + "_" + item.questionType) === uniqueId)) {
+                incorrectlyAnsweredIdioms.push({ idiomData: idiomData, questionType: questionType });
+                saveIncorrectlyAnsweredIdioms();
+            }
+        }
+
+        function removeCorrectlyAnsweredFromIncorrectList(idiomData, questionType) {
+             const uniqueId = idiomData.idiom + "_" + questionType;
+            incorrectlyAnsweredIdioms = incorrectlyAnsweredIdioms.filter(item => (item.idiomData.idiom + "_" + item.questionType) !== uniqueId);
+            saveIncorrectlyAnsweredIdioms();
+        }
+
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -204,23 +243,52 @@
             cardModeDiv.classList.add('hidden');
             quizModeDiv.classList.add('hidden');
             clearTimeout(autoNextTimer);
+            updateIncorrectReviewButton();
         }
 
-        // Card Mode Logic
-        function displayCard(index) {
-            const idiom = idioms[index];
-            cardIdiomEl.textContent = idiom.idiom;
-            cardPinyinEl.textContent = idiom.pinyin;
-            cardMeaningEl.textContent = idiom.meaning;
-            cardCounterEl.textContent = `${index + 1} / ${idioms.length}`;
+        function displayCard(index, sourceArray = idioms) {
+            const idiomData = sourceArray[index];
+            cardIdiomEl.textContent = idiomData.idiom;
+            cardBopomofoEl.textContent = idiomData.bopomofo;
+            cardMeaningEl.textContent = idiomData.meaning;
+            cardSentenceEl.textContent = idiomData.sentence ? `例句：${idiomData.sentence.replace("__BLANK__", `「${idiomData.blankWord}」`)}` : "";
+            cardSynonymsEl.textContent = idiomData.synonyms && idiomData.synonyms.length > 0 ? idiomData.synonyms.join('、') : '無';
+            cardAntonymsEl.textContent = idiomData.antonyms && idiomData.antonyms.length > 0 ? idiomData.antonyms.join('、') : '無';
+            cardCounterEl.textContent = `${index + 1} / ${sourceArray.length}`;
         }
+        
+        toggleMeaningBtn.addEventListener('click', () => {
+            const cardContentDiv = document.getElementById('cardContent');
+            // Toggle visibility for meaning, sentence, and synonym/antonym containers
+            document.getElementById('cardMeaning').classList.toggle('hidden');
+            document.getElementById('cardSentence').classList.toggle('hidden');
+            document.getElementById('cardSynonymsContainer').classList.toggle('hidden');
+            document.getElementById('cardAntonymsContainer').classList.toggle('hidden');
+
+            // Add a master class to cardContent for easier CSS targeting if needed, or rely on individual toggles
+            cardContentDiv.classList.toggle('hidden-meaning-master'); // Example of a master class
+
+            if (document.getElementById('cardMeaning').classList.contains('hidden')) {
+                toggleMeaningBtn.textContent = '顯示詳細'; // Changed text
+            } else {
+                toggleMeaningBtn.textContent = '隱藏詳細'; // Changed text
+            }
+        });
 
         function initCardMode() {
             modeSelectionDiv.classList.add('hidden');
             cardModeDiv.classList.remove('hidden');
+            // Reset visibility state when entering card mode
+            document.getElementById('cardMeaning').classList.remove('hidden');
+            document.getElementById('cardSentence').classList.remove('hidden');
+            document.getElementById('cardSynonymsContainer').classList.remove('hidden');
+            document.getElementById('cardAntonymsContainer').classList.remove('hidden');
+            document.getElementById('cardContent').classList.remove('hidden-meaning-master');
+            toggleMeaningBtn.textContent = '隱藏詳細';
             currentIdiomIndex = 0;
             displayCard(currentIdiomIndex);
         }
+
 
         prevCardBtn.addEventListener('click', () => {
             currentIdiomIndex = (currentIdiomIndex - 1 + idioms.length) % idioms.length;
@@ -232,124 +300,263 @@
             displayCard(currentIdiomIndex);
         });
 
-        // Quiz Mode Logic
-        function getRandomIdioms(excludeIdiom, count) {
-            const availableIdioms = idioms.filter(i => i.idiom !== excludeIdiom.idiom);
-            shuffleArray(availableIdioms);
-            return availableIdioms.slice(0, count);
+        function getDistractorOptions(currentIdiomData, type, count) {
+            let distractors = [];
+            const allOtherIdioms = idioms.filter(i => i.idiom !== currentIdiomData.idiom);
+            shuffleArray(allOtherIdioms);
+
+            let correctAnswersForCurrent = [];
+            if (type === 'synonym' && currentIdiomData.synonyms) correctAnswersForCurrent = currentIdiomData.synonyms;
+            if (type === 'antonym' && currentIdiomData.antonyms) correctAnswersForCurrent = currentIdiomData.antonyms;
+
+
+            for (let idiom of allOtherIdioms) {
+                if (distractors.length >= count) break;
+                let potentialDistractor = null;
+                if (type === 'synonym' && idiom.synonyms && idiom.synonyms.length > 0) {
+                    potentialDistractor = idiom.synonyms[Math.floor(Math.random() * idiom.synonyms.length)];
+                } else if (type === 'antonym' && idiom.antonyms && idiom.antonyms.length > 0) {
+                    potentialDistractor = idiom.antonyms[Math.floor(Math.random() * idiom.antonyms.length)];
+                } else if (type === 'meaning') {
+                    potentialDistractor = idiom.meaning;
+                } else if (type === 'idiom') {
+                    potentialDistractor = idiom.idiom;
+                }
+                
+                // Ensure distractor is not null, not already included, and not one of the correct answers for the current question
+                if (potentialDistractor && !distractors.includes(potentialDistractor) && !correctAnswersForCurrent.includes(potentialDistractor) ) {
+                    distractors.push(potentialDistractor);
+                }
+            }
+            
+            // Fallback if not enough unique distractors
+            let fallbackAttempt = 0;
+            while(distractors.length < count && fallbackAttempt < idioms.length) {
+                const randomFallbackIdiom = idioms[Math.floor(Math.random() * idioms.length)];
+                let fallbackValue = randomFallbackIdiom.idiom; // Default fallback to idiom name
+
+                if (type === 'meaning') fallbackValue = randomFallbackIdiom.meaning;
+                else if (type === 'synonym' && randomFallbackIdiom.synonyms && randomFallbackIdiom.synonyms.length > 0) fallbackValue = randomFallbackIdiom.synonyms[0];
+                else if (type === 'antonym' && randomFallbackIdiom.antonyms && randomFallbackIdiom.antonyms.length > 0) fallbackValue = randomFallbackIdiom.antonyms[0];
+
+                if (!distractors.includes(fallbackValue) && !correctAnswersForCurrent.includes(fallbackValue) && fallbackValue !== (type === 'idiom' ? currentIdiomData.idiom : currentIdiomData.meaning) ) {
+                     distractors.push(fallbackValue);
+                }
+                fallbackAttempt++;
+            }
+             // Absolute fallback if everything fails
+            while(distractors.length < count){
+                let dummyOption = `其他選項 ${distractors.length + 1}`;
+                if (!distractors.includes(dummyOption)) {
+                    distractors.push(dummyOption);
+                } else { // ensure uniqueness even for dummy options
+                    distractors.push(`其他選項 ${Math.random().toString(36).substring(7)}`);
+                }
+            }
+            return distractors.slice(0, count); // Ensure exactly 'count' distractors
         }
 
-        function displayQuestion() {
+
+        function displayQuizQuestion() {
             clearTimeout(autoNextTimer);
             feedbackMessageEl.textContent = '';
-            feedbackMessageEl.className = 'text-center font-medium mb-4'; // Reset class
+            feedbackMessageEl.className = 'text-center font-medium mb-4';
             optionsAreaEl.innerHTML = '';
             optionsAreaEl.classList.remove('disabled-options');
             nextQuestionBtn.classList.add('hidden');
+            questionBopomofoEl.textContent = '';
 
-            if (currentQuestionIndex >= currentQuizIdioms.length) {
+            if (currentQuestionDisplayIndex >= currentQuizSet.length) {
                 showQuizEnd();
                 return;
             }
 
-            const currentIdiomData = currentQuizIdioms[currentQuestionIndex];
-            let question, correctAnswer, optionsContent;
-
-            if (quizType === 'idiomToMeaning') {
-                question = `${currentIdiomData.idiom} (${currentIdiomData.pinyin})`;
-                correctAnswer = currentIdiomData.meaning;
-                const wrongMeanings = getRandomIdioms(currentIdiomData, 3).map(i => i.meaning);
-                optionsContent = [correctAnswer, ...wrongMeanings];
-            } else { // meaningToIdiom
-                question = currentIdiomData.meaning;
-                correctAnswer = currentIdiomData.idiom;
-                const wrongIdioms = getRandomIdioms(currentIdiomData, 3).map(i => i.idiom);
-                optionsContent = [correctAnswer, ...wrongIdioms];
+            let actualIdiomData, questionTypeForThisTurn;
+            if (activeQuizType === 'comprehensive' || activeQuizType === 'incorrectReview') {
+                currentQuestionData = currentQuizSet[currentQuestionDisplayIndex];
+                actualIdiomData = currentQuestionData.idiomData;
+                questionTypeForThisTurn = currentQuestionData.questionType;
+            } else {
+                actualIdiomData = currentQuizSet[currentQuestionDisplayIndex];
+                questionTypeForThisTurn = activeQuizType;
             }
+            
+            let questionContent, correctAnswer, optionsList;
 
-            questionTextEl.textContent = question;
-            quizProgressEl.textContent = `第 ${currentQuestionIndex + 1} 題 / 共 ${currentQuizIdioms.length} 題 | 分數: ${score}`;
+            switch (questionTypeForThisTurn) {
+                case 'idiomToMeaning':
+                    questionContent = actualIdiomData.idiom;
+                    questionBopomofoEl.textContent = actualIdiomData.bopomofo;
+                    correctAnswer = actualIdiomData.meaning;
+                    optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'meaning', 3)];
+                    break;
+                case 'meaningToIdiom':
+                    questionContent = actualIdiomData.meaning;
+                    correctAnswer = actualIdiomData.idiom;
+                    optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'idiom', 3)];
+                    break;
+                case 'fillInTheBlank':
+                    questionContent = actualIdiomData.sentence.replace("__BLANK__", "<span class='sentence-blank'>﹝　　﹞</span>");
+                    correctAnswer = actualIdiomData.blankWord;
+                    optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'idiom', 3)];
+                    break;
+                case 'findSynonym':
+                    questionContent = `「${actualIdiomData.idiom}」的近義詞是？`;
+                    questionBopomofoEl.textContent = actualIdiomData.bopomofo;
+                    // Ensure there is at least one synonym
+                    if (!actualIdiomData.synonyms || actualIdiomData.synonyms.length === 0) {
+                        console.error("Error: Idiom has no synonyms for findSynonym question type.", actualIdiomData);
+                        currentQuestionDisplayIndex++; // Skip this question
+                        displayQuizQuestion(); // Try next question
+                        return;
+                    }
+                    correctAnswer = actualIdiomData.synonyms[Math.floor(Math.random() * actualIdiomData.synonyms.length)];
+                    optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'synonym', 3)];
+                    break;
+                case 'findAntonym':
+                    questionContent = `「${actualIdiomData.idiom}」的反義詞是？`;
+                    questionBopomofoEl.textContent = actualIdiomData.bopomofo;
+                     if (!actualIdiomData.antonyms || actualIdiomData.antonyms.length === 0) {
+                        console.error("Error: Idiom has no antonyms for findAntonym question type.", actualIdiomData);
+                        currentQuestionDisplayIndex++; 
+                        displayQuizQuestion(); 
+                        return;
+                    }
+                    correctAnswer = actualIdiomData.antonyms[Math.floor(Math.random() * actualIdiomData.antonyms.length)];
+                    optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'antonym', 3)];
+                    break;
+                default:
+                    console.error("未知的問題類型:", questionTypeForThisTurn);
+                    showModeSelection();
+                    return;
+            }
+            
+            questionTextEl.innerHTML = questionContent;
+            quizProgressEl.textContent = `第 ${currentQuestionDisplayIndex + 1} 題 / 共 ${currentQuizSet.length} 題 | 分數: ${score}`;
+            shuffleArray(optionsList);
 
-
-            shuffleArray(optionsContent);
-
-            optionsContent.forEach(optionText => {
+            optionsList.forEach(optionText => {
+                if (typeof optionText === 'undefined') { // Safeguard against undefined options
+                    console.warn("An option was undefined for question:", questionContent, "Correct Answer:", correctAnswer, "Original Options:", optionsList);
+                    return; // Skip adding this undefined option
+                }
                 const optionButton = document.createElement('button');
                 optionButton.classList.add('btn', 'option-btn');
                 optionButton.textContent = optionText;
-                optionButton.addEventListener('click', () => checkAnswer(optionText, correctAnswer, optionButton));
+                optionButton.addEventListener('click', () => checkQuizAnswer(optionText, correctAnswer, optionButton, actualIdiomData, questionTypeForThisTurn));
                 optionsAreaEl.appendChild(optionButton);
             });
         }
 
-        function checkAnswer(selectedAnswer, correctAnswer, buttonEl) {
-            optionsAreaEl.classList.add('disabled-options'); // Disable other options
-            clearTimeout(autoNextTimer); // Clear any existing timer
+        function checkQuizAnswer(selectedAnswer, correctAnswer, buttonEl, idiomData, questionType) {
+            optionsAreaEl.classList.add('disabled-options');
+            clearTimeout(autoNextTimer);
 
             if (selectedAnswer === correctAnswer) {
                 feedbackMessageEl.textContent = '答對了！ 🎉';
                 feedbackMessageEl.className = 'text-center font-medium mb-4 text-green-600';
                 buttonEl.classList.add('correct');
                 score++;
+                if (activeQuizType === 'incorrectReview') {
+                    removeCorrectlyAnsweredFromIncorrectList(idiomData, questionType);
+                }
                 autoNextTimer = setTimeout(() => {
-                    currentQuestionIndex++;
-                    displayQuestion();
+                    currentQuestionDisplayIndex++;
+                    displayQuizQuestion();
                 }, 5000);
             } else {
                 feedbackMessageEl.textContent = '答錯了... 😢';
                 feedbackMessageEl.className = 'text-center font-medium mb-4 text-red-600';
                 buttonEl.classList.add('incorrect');
-                // Highlight correct answer
                 Array.from(optionsAreaEl.children).forEach(btn => {
                     if (btn.textContent === correctAnswer) {
                         btn.classList.add('correct');
                     }
                 });
+                if (activeQuizType !== 'incorrectReview') {
+                    addIncorrectIdiom(idiomData, questionType);
+                }
             }
             nextQuestionBtn.classList.remove('hidden');
         }
         
         nextQuestionBtn.addEventListener('click', () => {
             clearTimeout(autoNextTimer);
-            currentQuestionIndex++;
-            displayQuestion();
+            currentQuestionDisplayIndex++;
+            displayQuizQuestion();
         });
 
         function showQuizEnd() {
-            questionTextEl.textContent = `測驗結束！您的得分是 ${score} / ${currentQuizIdioms.length}`;
+            questionTextEl.textContent = `測驗結束！您的得分是 ${score} / ${currentQuizSet.length}`;
+            questionBopomofoEl.textContent = '';
             optionsAreaEl.innerHTML = '';
-            feedbackMessageEl.textContent = '';
+            feedbackMessageEl.textContent = (score === currentQuizSet.length && currentQuizSet.length > 0) ? '太棒了，全部答對！🥳' : '再接再厲！💪';
             nextQuestionBtn.classList.add('hidden');
             quizProgressEl.textContent = `測驗完成 | 最終分數: ${score}`;
+            updateIncorrectReviewButton();
         }
 
         function initQuizMode(type) {
             modeSelectionDiv.classList.add('hidden');
             quizModeDiv.classList.remove('hidden');
-            quizType = type;
-            currentQuizIdioms = [...idioms]; // Use a copy
-            shuffleArray(currentQuizIdioms);
-            currentQuestionIndex = 0;
+            activeQuizType = type;
             score = 0;
+            currentQuestionDisplayIndex = 0;
+            currentQuizSet = [];
+            let quizTitleText = "";
 
-            if (quizType === 'idiomToMeaning') {
-                quizTitleEl.textContent = '看成語選意思';
+            if (type === 'comprehensive') {
+                quizTitleText = '綜合練習';
+                idioms.forEach(idiom => {
+                    if (idiom.meaning) currentQuizSet.push({ idiomData: idiom, questionType: 'idiomToMeaning' });
+                    if (idiom.meaning) currentQuizSet.push({ idiomData: idiom, questionType: 'meaningToIdiom' });
+                    if (idiom.sentence && idiom.blankWord) currentQuizSet.push({ idiomData: idiom, questionType: 'fillInTheBlank' });
+                    if (idiom.synonyms && idiom.synonyms.length > 0) currentQuizSet.push({ idiomData: idiom, questionType: 'findSynonym' });
+                    if (idiom.antonyms && idiom.antonyms.length > 0) currentQuizSet.push({ idiomData: idiom, questionType: 'findAntonym' });
+                });
+            } else if (type === 'incorrectReview') {
+                quizTitleText = '錯題練習';
+                if (incorrectlyAnsweredIdioms.length === 0) {
+                    alert("恭喜！目前沒有錯題可以練習。"); showModeSelection(); return;
+                }
+                currentQuizSet = [...incorrectlyAnsweredIdioms];
             } else {
-                quizTitleEl.textContent = '看意思選成語';
+                 currentQuizSet = idioms.filter(idiom => {
+                    if (type === 'fillInTheBlank') return idiom.sentence && idiom.blankWord;
+                    if (type === 'findSynonym') return idiom.synonyms && idiom.synonyms.length > 0;
+                    if (type === 'findAntonym') return idiom.antonyms && idiom.antonyms.length > 0;
+                    return true; 
+                });
+                if (type === 'idiomToMeaning') quizTitleText = '看成語選意思';
+                else if (type === 'meaningToIdiom') quizTitleText = '看意思選成語';
+                else if (type === 'fillInTheBlank') quizTitleText = '例句填空';
+                else if (type === 'findSynonym') quizTitleText = '找近義詞';
+                else if (type === 'findAntonym') quizTitleText = '找反義詞';
             }
-            displayQuestion();
+            
+            if (currentQuizSet.length === 0) {
+                 alert(`抱歉，目前沒有足夠的題目可供「${quizTitleText}」模式練習。`);
+                 showModeSelection();
+                 return;
+            }
+
+            quizTitleEl.textContent = quizTitleText;
+            shuffleArray(currentQuizSet); 
+            displayQuizQuestion();
         }
 
-        // Event Listeners for mode selection
         startCardModeBtn.addEventListener('click', initCardMode);
         startQuizIdiomToMeaningBtn.addEventListener('click', () => initQuizMode('idiomToMeaning'));
         startQuizMeaningToIdiomBtn.addEventListener('click', () => initQuizMode('meaningToIdiom'));
+        startFillInTheBlankBtn.addEventListener('click', () => initQuizMode('fillInTheBlank'));
+        startFindSynonymBtn.addEventListener('click', () => initQuizMode('findSynonym'));
+        startFindAntonymBtn.addEventListener('click', () => initQuizMode('findAntonym'));
+        startComprehensiveBtn.addEventListener('click', () => initQuizMode('comprehensive'));
+        startIncorrectReviewBtn.addEventListener('click', () => initQuizMode('incorrectReview'));
 
-        // Event Listeners for back to menu
         backToMenuFromCardBtn.addEventListener('click', showModeSelection);
         backToMenuFromQuizBtn.addEventListener('click', showModeSelection);
 
-        // Initial setup
         showModeSelection();
     </script>
 </body>

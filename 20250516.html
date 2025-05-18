@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f0f9ff; /* Light blue background */
+            background-color: #f0f9ff; /* 淡藍色背景 */
         }
         .card {
             background-color: white;
@@ -44,9 +44,9 @@
         .btn-red:hover { background-color: #dc2626; }
         .btn-orange { background-color: #f97316; color: white; }
         .btn-orange:hover { background-color: #ea580c; }
-        .btn-purple { background-color: #8b5cf6; color: white; } /* Purple for comprehensive */
+        .btn-purple { background-color: #8b5cf6; color: white; } /* 紫色用於綜合模式 */
         .btn-purple:hover { background-color: #7c3aed; }
-        .btn-teal { background-color: #14b8a6; color: white; } /* Teal for synonym/antonym */
+        .btn-teal { background-color: #14b8a6; color: white; } /* 青色用於近義/反義詞 */
         .btn-teal:hover { background-color: #0d9488; }
 
         .option-btn {
@@ -63,9 +63,15 @@
         .bopomofo { color: #4b5563; font-size: 1.125rem; }
         #feedbackMessage { min-height: 2.5rem; font-size: 1.125rem; }
         .sentence-blank { font-weight: bold; color: #dc2626; }
-        .hidden-meaning #cardMeaning, .hidden-meaning #cardSentence,
-        .hidden-meaning #cardSynonymsContainer, .hidden-meaning #cardAntonymsContainer { display: none; } /* Updated IDs */
+        /* 卡片模式中隱藏詳細資料的樣式 */
+        .card-content-hidden #cardMeaning,
+        .card-content-hidden #cardSentence,
+        .card-content-hidden #cardSynonymsContainer,
+        .card-content-hidden #cardAntonymsContainer {
+            display: none;
+        }
         .synonym-antonym-label { font-weight: 500; color: #374151; margin-top: 0.5rem;}
+        #explanationArea p { margin-bottom: 0.5rem; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4 selection:bg-blue-200">
@@ -92,18 +98,18 @@
         <div id="cardMode" class="hidden card p-6 md:p-8 no-hover">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-semibold text-gray-700">卡片模式</h2>
-                <button id="toggleMeaningBtn" class="btn btn-secondary btn-sm py-1 px-3 text-sm">隱藏意思</button>
+                <button id="toggleMeaningBtn" class="btn btn-secondary btn-sm py-1 px-3 text-sm">隱藏詳細</button>
             </div>
             <div id="cardContent" class="mb-6 p-6 bg-blue-50 rounded-lg min-h-[300px] flex flex-col justify-center">
                 <h3 id="cardIdiom" class="text-3xl font-bold text-blue-700 mb-2"></h3>
                 <p id="cardBopomofo" class="bopomofo mb-4"></p>
                 <p id="cardMeaning" class="text-gray-700 text-base mb-3"></p>
                 <p id="cardSentence" class="text-sm text-gray-600 italic mb-3"></p>
-                <div id="cardSynonymsContainer" class="mb-2"> {/* Changed ID */}
-                    <span class="synonym-antonym-label">近義詞：</span><span id="cardSynonyms" class="text-sm text-gray-600"></span> {/* Changed ID */}
+                <div id="cardSynonymsContainer" class="mb-2">
+                    <span class="synonym-antonym-label">近義詞：</span><span id="cardSynonyms" class="text-sm text-gray-600"></span>
                 </div>
-                <div id="cardAntonymsContainer"> {/* Changed ID */}
-                    <span class="synonym-antonym-label">反義詞：</span><span id="cardAntonyms" class="text-sm text-gray-600"></span> {/* Changed ID */}
+                <div id="cardAntonymsContainer">
+                    <span class="synonym-antonym-label">反義詞：</span><span id="cardAntonyms" class="text-sm text-gray-600"></span>
                 </div>
             </div>
             <div class="flex justify-between items-center mb-4">
@@ -123,7 +129,8 @@
             </div>
             <div id="optionsArea" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4"></div>
             <div id="feedbackMessage" class="text-center font-medium mb-4"></div>
-            <button id="nextQuestionBtn" class="btn btn-green w-full mb-4 hidden">下一題</button>
+            <div id="explanationArea" class="mt-4 p-4 bg-gray-100 rounded-lg hidden text-sm"></div> 
+            <button id="nextQuestionBtn" class="btn btn-green w-full my-4 hidden">下一題</button> 
             <button id="backToMenuFromQuizBtn" class="btn btn-primary w-full">返回主選單</button>
         </div>
     </div>
@@ -131,33 +138,33 @@
     <script>
         // 成語題庫 (近義/反義詞僅包含圖片中明確標示者)
         const idioms = [
-            { idiom: "融會貫通", bopomofo: "ㄖㄨㄥˊ ㄏㄨㄟˋ ㄍㄨㄢˋ ㄊㄨㄥ", meaning: "將各種相關的知識或事物加以融合、貫穿，進而獲得全面通徹的領會。", sentence: "讀書若能 __BLANK__ ，便可以將所學靈活運用。", blankWord: "融會貫通", synonyms: ["心領神會"], antonyms: [] }, // Image 1: 近義 心領神會
+            { idiom: "融會貫通", bopomofo: "ㄖㄨㄥˊ ㄏㄨㄟˋ ㄍㄨㄢˋ ㄊㄨㄥ", meaning: "將各種相關的知識或事物加以融合、貫穿，進而獲得全面通徹的領會。", sentence: "讀書若能 __BLANK__ ，便可以將所學靈活運用。", blankWord: "融會貫通", synonyms: ["心領神會"], antonyms: [] },
             { idiom: "如雷貫耳", bopomofo: "ㄖㄨˊ ㄌㄟˊ ㄍㄨㄢˋ ㄦˇ", meaning: "比喻人名氣很大，眾所共聞。", sentence: "這位大畫家的名聲早已 __BLANK__ ，無人不曉。", blankWord: "如雷貫耳", synonyms: [], antonyms: [] },
-            { idiom: "半斤八兩", bopomofo: "ㄅㄢˋ ㄐㄧㄣ ㄅㄚ ㄌㄧㄤˇ", meaning: "比喻彼此相當，不相上下。", sentence: "他們兩隊實力 __BLANK__ ，看來會是場激烈的比賽。", blankWord: "半斤八兩", synonyms: ["不相上下"], antonyms: ["天差地遠"] }, // Image 1: (不相上下 is part of its definition), 反義 天差地遠
+            { idiom: "半斤八兩", bopomofo: "ㄅㄢˋ ㄐㄧㄣ ㄅㄚ ㄌㄧㄤˇ", meaning: "比喻彼此相當，不相上下。", sentence: "他們兩隊實力 __BLANK__ ，看來會是場激烈的比賽。", blankWord: "半斤八兩", synonyms: ["不相上下"], antonyms: ["天差地遠"] },
             { idiom: "全神貫注", bopomofo: "ㄑㄩㄢˊ ㄕㄣˊ ㄍㄨㄢˋ ㄓㄨˋ", meaning: "精神高度集中，注意力完全凝聚。", sentence: "他 __BLANK__ 地聆聽老師講課，不錯過任何細節。", blankWord: "全神貫注", synonyms: [], antonyms: [] },
             { idiom: "舉世聞名", bopomofo: "ㄐㄩˇ ㄕˋ ㄨㄣˊ ㄇㄧㄥˊ", meaning: "全世界都知道，形容非常著名。", sentence: "這座城市的夜景 __BLANK__ ，吸引了許多遊客。", blankWord: "舉世聞名", synonyms: [], antonyms: [] },
             { idiom: "全力以赴", bopomofo: "ㄑㄩㄢˊ ㄌㄧˋ ㄧˇ ㄈㄨˋ", meaning: "用盡全部的力量去做某件事情。", sentence: "無論未來面臨多少挑戰，我都會 __BLANK__ ，實現夢想。", blankWord: "全力以赴", synonyms: [], antonyms: [] },
             { idiom: "無怨無悔", bopomofo: "ㄨˊ ㄩㄢˋ ㄨˊ ㄏㄨㄟˇ", meaning: "沒有任何怨恨和後悔。", sentence: "奶奶當志工雖然工作繁重，卻 __BLANK__ 、樂此不疲。", blankWord: "無怨無悔", synonyms: [], antonyms: [] },
-            { idiom: "束之高閣", bopomofo: "ㄕㄨˋ ㄓ ㄍㄠ ㄍㄜˊ", meaning: "把東西捆起來，放置於閣樓上。比喻棄置不用。", sentence: "這個計畫因資金不足，只好暫時 __BLANK__ 。", blankWord: "束之高閣", synonyms: [], antonyms: ["物盡其用"] }, // Image 3: 反義 物盡其用
+            { idiom: "束之高閣", bopomofo: "ㄕㄨˋ ㄓ ㄍㄠ ㄍㄜˊ", meaning: "把東西捆起來，放置於閣樓上。比喻棄置不用。", sentence: "這個計畫因資金不足，只好暫時 __BLANK__ 。", blankWord: "束之高閣", synonyms: [], antonyms: ["物盡其用"] },
             { idiom: "冥頑不靈", bopomofo: "ㄇㄧㄥˊ ㄨㄢˊ ㄅㄨˋ ㄌㄧㄥˊ", meaning: "愚昧頑固而不通情理。", sentence: "有些人就是 __BLANK__ ，怎麼勸也聽不進去。", blankWord: "冥頑不靈", synonyms: [], antonyms: [] },
-            { idiom: "家徒四壁", bopomofo: "ㄐㄧㄚ ㄊㄨˊ ㄙˋ ㄅㄧˋ", meaning: "家中只剩下四周的牆壁。形容家境極為貧困。", sentence: "他早年 __BLANK__ ，卻靠著毅力白手起家。", blankWord: "家徒四壁", synonyms: ["一貧如洗"], antonyms: ["腰纏萬貫"] }, // Image 3: 近義 一貧如洗, 反義 腰纏萬貫
-            { idiom: "一籌莫展", bopomofo: "ㄧˋ ㄔㄡˊ ㄇㄛˋ ㄓㄢˇ", meaning: "一點計策也施展不出來。比喻毫無辦法。", sentence: "面對這個複雜的問題，他一時 __BLANK__ 。", blankWord: "一籌莫展", synonyms: ["束手無策"], antonyms: ["胸有成竹"] }, // Image 3: 近義 束手無策, 反義 胸有成竹
-            { idiom: "來龍去脈", bopomofo: "ㄌㄞˊ ㄌㄨㄥˊ ㄑㄩˋ ㄇㄞˋ", meaning: "比喻事情的始末和原委。", sentence: "警方正在調查事件的 __BLANK__ 。", blankWord: "來龍去脈", synonyms: ["前因後果"], antonyms: [] }, // Image 3: 近義 前因後果
+            { idiom: "家徒四壁", bopomofo: "ㄐㄧㄚ ㄊㄨˊ ㄙˋ ㄅㄧˋ", meaning: "家中只剩下四周的牆壁。形容家境極為貧困。", sentence: "他早年 __BLANK__ ，卻靠著毅力白手起家。", blankWord: "家徒四壁", synonyms: ["一貧如洗"], antonyms: ["腰纏萬貫"] },
+            { idiom: "一籌莫展", bopomofo: "ㄧˋ ㄔㄡˊ ㄇㄛˋ ㄓㄢˇ", meaning: "一點計策也施展不出來。比喻毫無辦法。", sentence: "面對這個複雜的問題，他一時 __BLANK__ 。", blankWord: "一籌莫展", synonyms: ["束手無策"], antonyms: ["胸有成竹"] },
+            { idiom: "來龍去脈", bopomofo: "ㄌㄞˊ ㄌㄨㄥˊ ㄑㄩˋ ㄇㄞˋ", meaning: "比喻事情的始末和原委。", sentence: "警方正在調查事件的 __BLANK__ 。", blankWord: "來龍去脈", synonyms: ["前因後果"], antonyms: [] },
             { idiom: "日復一日", bopomofo: "ㄖˋ ㄈㄨˋ ㄧˊ ㄖˋ", meaning: "一天又一天，形容日子重複或時間流逝。", sentence: "他 __BLANK__ 地辛勤工作，希望能改善家裡的經濟狀況。", blankWord: "日復一日", synonyms: [], antonyms: [] },
             { idiom: "苦不堪言", bopomofo: "ㄎㄨˇ ㄅㄨˋ ㄎㄢ ㄧㄢˊ", meaning: "痛苦得無法用言語來形容。", sentence: "牙痛起來真是讓人 __BLANK__ 。", blankWord: "苦不堪言", synonyms: [], antonyms: [] },
             { idiom: "家常便飯", bopomofo: "ㄐㄧㄚ ㄔㄤˊ ㄅㄧㄢˋ ㄈㄢˋ", meaning: "家中的日常飯食。比喻很平常、很普通的事。", sentence: "對他而言，熬夜加班已經是 __BLANK__ 了。", blankWord: "家常便飯", synonyms: [], antonyms: [] },
             { idiom: "慎思明辨", bopomofo: "ㄕㄣˋ ㄙ ㄇㄧㄥˊ ㄅㄧㄢˋ", meaning: "謹慎思考，明白分辨是非。", sentence: "在資訊爆炸的時代，我們更需要 __BLANK__ 的能力。", blankWord: "慎思明辨", synonyms: [], antonyms: [] },
             { idiom: "大開眼界", bopomofo: "ㄉㄚˋ ㄎㄞ ㄧㄢˇ ㄐㄧㄝˋ", meaning: "開闊視野，增長見識。", sentence: "這次的博物館參觀，真讓我 __BLANK__ 。", blankWord: "大開眼界", synonyms: [], antonyms: [] },
             { idiom: "毫無頭緒", bopomofo: "ㄏㄠˊ ㄨˊ ㄊㄡˊ ㄒㄩˋ", meaning: "一點線索或辦法也沒有。", sentence: "對於這個謎題，我目前仍然 __BLANK__ 。", blankWord: "毫無頭緒", synonyms: [], antonyms: [] },
-            { idiom: "洗耳恭聽", bopomofo: "ㄒㄧˇ ㄦˇ ㄍㄨㄥ ㄊㄧㄥ", meaning: "比喻專心恭敬地聽別人說話。", sentence: "您有什麼寶貴意見，我一定 __BLANK__ 。", blankWord: "洗耳恭聽", synonyms: [], antonyms: ["充耳不聞"] }, // Image 6: 反義 充耳不聞
+            { idiom: "洗耳恭聽", bopomofo: "ㄒㄧˇ ㄦˇ ㄍㄨㄥ ㄊㄧㄥ", meaning: "比喻專心恭敬地聽別人說話。", sentence: "您有什麼寶貴意見，我一定 __BLANK__ 。", blankWord: "洗耳恭聽", synonyms: [], antonyms: ["充耳不聞"] },
             { idiom: "負荊請罪", bopomofo: "ㄈㄨˋ ㄐㄧㄥ ㄑㄧㄥˇ ㄗㄨㄟˋ", meaning: "背著荊條向對方承認錯誤，請求責罰。", sentence: "他知道自己錯了，便登門 __BLANK__ 。", blankWord: "負荊請罪", synonyms: [], antonyms: [] },
-            { idiom: "披荊斬棘", bopomofo: "ㄆㄧ ㄐㄧㄥ ㄓㄢˇ ㄐㄧˊ", meaning: "比喻克服困難，掃除障礙。", sentence: "他們一路 __BLANK__ ，終於成功建立了事業。", blankWord: "披荊斬棘", synonyms: ["乘風破浪"], antonyms: ["畏縮不前"] }, // Image 7: 近義 乘風破浪, 反義 畏縮不前
+            { idiom: "披荊斬棘", bopomofo: "ㄆㄧ ㄐㄧㄥ ㄓㄢˇ ㄐㄧˊ", meaning: "比喻克服困難，掃除障礙。", sentence: "他們一路 __BLANK__ ，終於成功建立了事業。", blankWord: "披荊斬棘", synonyms: ["乘風破浪"], antonyms: ["畏縮不前"] },
             { idiom: "移風易俗", bopomofo: "ㄧˊ ㄈㄥ ㄧˋ ㄙㄨˊ", meaning: "改善不良的社會風氣和習俗。", sentence: "教育是 __BLANK__ 的重要手段。", blankWord: "移風易俗", synonyms: [], antonyms: [] },
-            { idiom: "咫尺天涯", bopomofo: "ㄓˇ ㄔˇ ㄊㄧㄢ ㄧㄚˊ", meaning: "比喻距離雖近，卻像遠在天邊一樣。", sentence: "他們倆雖是鄰居，卻因忙碌而 __BLANK__ ，難得見面。", blankWord: "咫尺天涯", synonyms: [], antonyms: ["天涯若比鄰"] }, // Image 7: 反義 天涯若比鄰
-            { idiom: "一帆風順", bopomofo: "ㄧˋ ㄈㄢˊ ㄈㄥ ㄕㄨㄣˋ", meaning: "比喻非常順利，毫無阻礙。", sentence: "祝你此行 __BLANK__ ，收穫滿滿。", blankWord: "一帆風順", synonyms: ["一路順風"], antonyms: ["一波三折"] }, // Image 7: 近義 一路順風, 反義 一波三折
-            { idiom: "高瞻遠矚", bopomofo: "ㄍㄠ ㄓㄢ ㄩㄢˇ ㄓㄨˇ", meaning: "看得高遠，形容見識遠大。", sentence: "制定國家政策需要 __BLANK__ 的眼光。", blankWord: "高瞻遠矚", synonyms: ["目光如炬"], antonyms: ["目光如豆"] }, // Image 8: 近義 目光如炬, 反義 目光如豆
-            { idiom: "大智若愚", bopomofo: "ㄉㄚˋ ㄓˋ ㄖㄨㄛˋ ㄩˊ", meaning: "有極高智慧的人，表面上看起來似乎愚笨。", sentence: "他平時不多話，其實是 __BLANK__ ，深藏不露。", blankWord: "大智若愚", synonyms: ["深藏不露"], antonyms: ["鋒芒畢露"] }, // Image 8: 近義 深藏不露, 反義 鋒芒畢露
-            { idiom: "赴湯蹈火", bopomofo: "ㄈㄨˋ ㄊㄤ ㄉㄠˋ ㄏㄨㄛˇ", meaning: "比喻奮不顧身，不避艱險。", sentence: "為了救人，消防員們個個 __BLANK__ 。", blankWord: "赴湯蹈火", synonyms: ["奮不顧身"], antonyms: ["貪生怕死"] }  // Image 8: 近義 奮不顧身, 反義 貪生怕死
+            { idiom: "咫尺天涯", bopomofo: "ㄓˇ ㄔˇ ㄊㄧㄢ ㄧㄚˊ", meaning: "比喻距離雖近，卻像遠在天邊一樣。", sentence: "他們倆雖是鄰居，卻因忙碌而 __BLANK__ ，難得見面。", blankWord: "咫尺天涯", synonyms: [], antonyms: ["天涯若比鄰"] },
+            { idiom: "一帆風順", bopomofo: "ㄧˋ ㄈㄢˊ ㄈㄥ ㄕㄨㄣˋ", meaning: "比喻非常順利，毫無阻礙。", sentence: "祝你此行 __BLANK__ ，收穫滿滿。", blankWord: "一帆風順", synonyms: ["一路順風"], antonyms: ["一波三折"] },
+            { idiom: "高瞻遠矚", bopomofo: "ㄍㄠ ㄓㄢ ㄩㄢˇ ㄓㄨˇ", meaning: "看得高遠，形容見識遠大。", sentence: "制定國家政策需要 __BLANK__ 的眼光。", blankWord: "高瞻遠矚", synonyms: ["目光如炬"], antonyms: ["目光如豆"] },
+            { idiom: "大智若愚", bopomofo: "ㄉㄚˋ ㄓˋ ㄖㄨㄛˋ ㄩˊ", meaning: "有極高智慧的人，表面上看起來似乎愚笨。", sentence: "他平時不多話，其實是 __BLANK__ ，深藏不露。", blankWord: "大智若愚", synonyms: ["深藏不露"], antonyms: ["鋒芒畢露"] },
+            { idiom: "赴湯蹈火", bopomofo: "ㄈㄨˋ ㄊㄤ ㄉㄠˋ ㄏㄨㄛˇ", meaning: "比喻奮不顧身，不避艱險。", sentence: "為了救人，消防員們個個 __BLANK__ 。", blankWord: "赴湯蹈火", synonyms: ["奮不顧身"], antonyms: ["貪生怕死"] }
         ];
 
         let currentIdiomIndex = 0;
@@ -169,7 +176,7 @@
         let autoNextTimer = null;
         let incorrectlyAnsweredIdioms = JSON.parse(localStorage.getItem('incorrectlyAnsweredIdioms')) || [];
 
-        // DOM Elements (shortened for brevity, assume they are correctly fetched as in previous version)
+        // DOM Elements
         const modeSelectionDiv = document.getElementById('modeSelection');
         const cardModeDiv = document.getElementById('cardMode');
         const quizModeDiv = document.getElementById('quizMode');
@@ -177,8 +184,11 @@
         const cardBopomofoEl = document.getElementById('cardBopomofo');
         const cardMeaningEl = document.getElementById('cardMeaning');
         const cardSentenceEl = document.getElementById('cardSentence');
-        const cardSynonymsEl = document.getElementById('cardSynonyms'); // Direct span
-        const cardAntonymsEl = document.getElementById('cardAntonyms'); // Direct span
+        const cardSynonymsEl = document.getElementById('cardSynonyms');
+        const cardAntonymsEl = document.getElementById('cardAntonyms');
+        const cardSynonymsContainerEl = document.getElementById('cardSynonymsContainer');
+        const cardAntonymsContainerEl = document.getElementById('cardAntonymsContainer');
+        const cardContentEl = document.getElementById('cardContent');
         const toggleMeaningBtn = document.getElementById('toggleMeaningBtn');
         const prevCardBtn = document.getElementById('prevCardBtn');
         const nextCardBtn = document.getElementById('nextCardBtn');
@@ -189,11 +199,11 @@
         const questionBopomofoEl = document.getElementById('questionBopomofo');
         const optionsAreaEl = document.getElementById('optionsArea');
         const feedbackMessageEl = document.getElementById('feedbackMessage');
+        const explanationAreaEl = document.getElementById('explanationArea'); // 解析區塊的元素
         const nextQuestionBtn = document.getElementById('nextQuestionBtn');
         const backToMenuFromQuizBtn = document.getElementById('backToMenuFromQuizBtn');
         const quizProgressEl = document.getElementById('quizProgress');
         const startIncorrectReviewBtn = document.getElementById('startIncorrectReviewBtn');
-        // Buttons for starting modes
         const startCardModeBtn = document.getElementById('startCardModeBtn');
         const startQuizIdiomToMeaningBtn = document.getElementById('startQuizIdiomToMeaningBtn');
         const startQuizMeaningToIdiomBtn = document.getElementById('startQuizMeaningToIdiomBtn');
@@ -258,32 +268,18 @@
         }
         
         toggleMeaningBtn.addEventListener('click', () => {
-            const cardContentDiv = document.getElementById('cardContent');
-            // Toggle visibility for meaning, sentence, and synonym/antonym containers
-            document.getElementById('cardMeaning').classList.toggle('hidden');
-            document.getElementById('cardSentence').classList.toggle('hidden');
-            document.getElementById('cardSynonymsContainer').classList.toggle('hidden');
-            document.getElementById('cardAntonymsContainer').classList.toggle('hidden');
-
-            // Add a master class to cardContent for easier CSS targeting if needed, or rely on individual toggles
-            cardContentDiv.classList.toggle('hidden-meaning-master'); // Example of a master class
-
-            if (document.getElementById('cardMeaning').classList.contains('hidden')) {
-                toggleMeaningBtn.textContent = '顯示詳細'; // Changed text
+            cardContentEl.classList.toggle('card-content-hidden');
+            if (cardContentEl.classList.contains('card-content-hidden')) {
+                toggleMeaningBtn.textContent = '顯示詳細';
             } else {
-                toggleMeaningBtn.textContent = '隱藏詳細'; // Changed text
+                toggleMeaningBtn.textContent = '隱藏詳細';
             }
         });
 
         function initCardMode() {
             modeSelectionDiv.classList.add('hidden');
             cardModeDiv.classList.remove('hidden');
-            // Reset visibility state when entering card mode
-            document.getElementById('cardMeaning').classList.remove('hidden');
-            document.getElementById('cardSentence').classList.remove('hidden');
-            document.getElementById('cardSynonymsContainer').classList.remove('hidden');
-            document.getElementById('cardAntonymsContainer').classList.remove('hidden');
-            document.getElementById('cardContent').classList.remove('hidden-meaning-master');
+            cardContentEl.classList.remove('card-content-hidden'); // 確保預設顯示詳細資料
             toggleMeaningBtn.textContent = '隱藏詳細';
             currentIdiomIndex = 0;
             displayCard(currentIdiomIndex);
@@ -304,11 +300,9 @@
             let distractors = [];
             const allOtherIdioms = idioms.filter(i => i.idiom !== currentIdiomData.idiom);
             shuffleArray(allOtherIdioms);
-
             let correctAnswersForCurrent = [];
             if (type === 'synonym' && currentIdiomData.synonyms) correctAnswersForCurrent = currentIdiomData.synonyms;
             if (type === 'antonym' && currentIdiomData.antonyms) correctAnswersForCurrent = currentIdiomData.antonyms;
-
 
             for (let idiom of allOtherIdioms) {
                 if (distractors.length >= count) break;
@@ -322,38 +316,27 @@
                 } else if (type === 'idiom') {
                     potentialDistractor = idiom.idiom;
                 }
-                
-                // Ensure distractor is not null, not already included, and not one of the correct answers for the current question
                 if (potentialDistractor && !distractors.includes(potentialDistractor) && !correctAnswersForCurrent.includes(potentialDistractor) ) {
                     distractors.push(potentialDistractor);
                 }
             }
-            
-            // Fallback if not enough unique distractors
             let fallbackAttempt = 0;
-            while(distractors.length < count && fallbackAttempt < idioms.length) {
+            while(distractors.length < count && fallbackAttempt < idioms.length * 2) { // Increased fallback attempts
                 const randomFallbackIdiom = idioms[Math.floor(Math.random() * idioms.length)];
-                let fallbackValue = randomFallbackIdiom.idiom; // Default fallback to idiom name
-
+                let fallbackValue = randomFallbackIdiom.idiom; 
                 if (type === 'meaning') fallbackValue = randomFallbackIdiom.meaning;
                 else if (type === 'synonym' && randomFallbackIdiom.synonyms && randomFallbackIdiom.synonyms.length > 0) fallbackValue = randomFallbackIdiom.synonyms[0];
                 else if (type === 'antonym' && randomFallbackIdiom.antonyms && randomFallbackIdiom.antonyms.length > 0) fallbackValue = randomFallbackIdiom.antonyms[0];
-
-                if (!distractors.includes(fallbackValue) && !correctAnswersForCurrent.includes(fallbackValue) && fallbackValue !== (type === 'idiom' ? currentIdiomData.idiom : currentIdiomData.meaning) ) {
+                if (fallbackValue && !distractors.includes(fallbackValue) && !correctAnswersForCurrent.includes(fallbackValue) && fallbackValue !== (type === 'idiom' ? currentIdiomData.idiom : (type === 'meaning' ? currentIdiomData.meaning : null)) ) {
                      distractors.push(fallbackValue);
                 }
                 fallbackAttempt++;
             }
-             // Absolute fallback if everything fails
             while(distractors.length < count){
-                let dummyOption = `其他選項 ${distractors.length + 1}`;
-                if (!distractors.includes(dummyOption)) {
-                    distractors.push(dummyOption);
-                } else { // ensure uniqueness even for dummy options
-                    distractors.push(`其他選項 ${Math.random().toString(36).substring(7)}`);
-                }
+                let dummyOption = `其他選項 ${distractors.length + 1}_${Math.random().toString(36).substring(7)}`;
+                if (!distractors.includes(dummyOption)) distractors.push(dummyOption);
             }
-            return distractors.slice(0, count); // Ensure exactly 'count' distractors
+            return distractors.slice(0, count);
         }
 
 
@@ -361,6 +344,8 @@
             clearTimeout(autoNextTimer);
             feedbackMessageEl.textContent = '';
             feedbackMessageEl.className = 'text-center font-medium mb-4';
+            explanationAreaEl.innerHTML = ''; // 清除解析內容
+            explanationAreaEl.classList.add('hidden'); // 隱藏解析區塊
             optionsAreaEl.innerHTML = '';
             optionsAreaEl.classList.remove('disabled-options');
             nextQuestionBtn.classList.add('hidden');
@@ -403,12 +388,8 @@
                 case 'findSynonym':
                     questionContent = `「${actualIdiomData.idiom}」的近義詞是？`;
                     questionBopomofoEl.textContent = actualIdiomData.bopomofo;
-                    // Ensure there is at least one synonym
                     if (!actualIdiomData.synonyms || actualIdiomData.synonyms.length === 0) {
-                        console.error("Error: Idiom has no synonyms for findSynonym question type.", actualIdiomData);
-                        currentQuestionDisplayIndex++; // Skip this question
-                        displayQuizQuestion(); // Try next question
-                        return;
+                        currentQuestionDisplayIndex++; displayQuizQuestion(); return;
                     }
                     correctAnswer = actualIdiomData.synonyms[Math.floor(Math.random() * actualIdiomData.synonyms.length)];
                     optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'synonym', 3)];
@@ -417,18 +398,12 @@
                     questionContent = `「${actualIdiomData.idiom}」的反義詞是？`;
                     questionBopomofoEl.textContent = actualIdiomData.bopomofo;
                      if (!actualIdiomData.antonyms || actualIdiomData.antonyms.length === 0) {
-                        console.error("Error: Idiom has no antonyms for findAntonym question type.", actualIdiomData);
-                        currentQuestionDisplayIndex++; 
-                        displayQuizQuestion(); 
-                        return;
+                        currentQuestionDisplayIndex++; displayQuizQuestion(); return;
                     }
                     correctAnswer = actualIdiomData.antonyms[Math.floor(Math.random() * actualIdiomData.antonyms.length)];
                     optionsList = [correctAnswer, ...getDistractorOptions(actualIdiomData, 'antonym', 3)];
                     break;
-                default:
-                    console.error("未知的問題類型:", questionTypeForThisTurn);
-                    showModeSelection();
-                    return;
+                default: console.error("未知的問題類型:", questionTypeForThisTurn); showModeSelection(); return;
             }
             
             questionTextEl.innerHTML = questionContent;
@@ -436,10 +411,7 @@
             shuffleArray(optionsList);
 
             optionsList.forEach(optionText => {
-                if (typeof optionText === 'undefined') { // Safeguard against undefined options
-                    console.warn("An option was undefined for question:", questionContent, "Correct Answer:", correctAnswer, "Original Options:", optionsList);
-                    return; // Skip adding this undefined option
-                }
+                if (typeof optionText === 'undefined') { return; }
                 const optionButton = document.createElement('button');
                 optionButton.classList.add('btn', 'option-btn');
                 optionButton.textContent = optionText;
@@ -451,6 +423,9 @@
         function checkQuizAnswer(selectedAnswer, correctAnswer, buttonEl, idiomData, questionType) {
             optionsAreaEl.classList.add('disabled-options');
             clearTimeout(autoNextTimer);
+            explanationAreaEl.innerHTML = ''; // 清空先前的解析
+            explanationAreaEl.classList.add('hidden');
+
 
             if (selectedAnswer === correctAnswer) {
                 feedbackMessageEl.textContent = '答對了！ 🎉';
@@ -473,6 +448,65 @@
                         btn.classList.add('correct');
                     }
                 });
+
+                // 顯示解析
+                let explanationContent = `<h4 class="text-md font-semibold mb-2 text-gray-700 border-b pb-1">題目解析</h4>`;
+                const questionPrimaryIdiom = idiomData; // The idiom the question is based on
+
+                explanationContent += `<div class="p-2 border-l-4 border-blue-500 bg-blue-50 mb-2 rounded-r-md">
+                                        <p class="font-medium text-blue-700">題目「${questionPrimaryIdiom.idiom}」 (${questionPrimaryIdiom.bopomofo})</p>
+                                        <p class="text-gray-700">意思是：${questionPrimaryIdiom.meaning}</p>
+                                       </div>`;
+
+                let correctAnswerExplanation = '';
+                if (questionType === 'idiomToMeaning') {
+                    correctAnswerExplanation = `<div class="p-2 border-l-4 border-green-500 bg-green-50 mb-2 rounded-r-md">
+                                                <p class="font-medium text-green-700">正確解釋就是上述「${questionPrimaryIdiom.idiom}」的意思。</p>
+                                               </div>`;
+                } else { 
+                    const correctAnsIdiomObj = idioms.find(i => i.idiom === correctAnswer);
+                    if (correctAnsIdiomObj) {
+                        correctAnswerExplanation = `<div class="p-2 border-l-4 border-green-500 bg-green-50 mb-2 rounded-r-md">
+                                                    <p class="font-medium text-green-700">正確答案「${correctAnsIdiomObj.idiom}」 (${correctAnsIdiomObj.bopomofo})</p>
+                                                    <p class="text-gray-700">意思是：${correctAnsIdiomObj.meaning}</p>
+                                                   </div>`;
+                    } else { 
+                        correctAnswerExplanation = `<div class="p-2 border-l-4 border-green-500 bg-green-50 mb-2 rounded-r-md">
+                                                    <p class="font-medium text-green-700">正確答案是：「${correctAnswer}」</p>
+                                                   </div>`;
+                    }
+                }
+                explanationContent += correctAnswerExplanation;
+
+                let selectedAnswerExplanation = '';
+                const selectedAnsIdiomObj = idioms.find(i => i.idiom === selectedAnswer);
+                if (selectedAnsIdiomObj) {
+                    selectedAnswerExplanation = `<div class="p-2 border-l-4 border-red-500 bg-red-50 rounded-r-md">
+                                                 <p class="font-medium text-red-700">您的選擇「${selectedAnsIdiomObj.idiom}」 (${selectedAnsIdiomObj.bopomofo})</p>
+                                                 <p class="text-gray-700">意思是：${selectedAnsIdiomObj.meaning}</p>
+                                                </div>`;
+                } else if (questionType === 'idiomToMeaning') { 
+                    const idiomMatchingSelectedMeaning = idioms.find(i => i.meaning === selectedAnswer);
+                    if (idiomMatchingSelectedMeaning) {
+                        selectedAnswerExplanation = `<div class="p-2 border-l-4 border-red-500 bg-red-50 rounded-r-md">
+                                                     <p class="font-medium text-red-700">您選擇的意思，是「${idiomMatchingSelectedMeaning.idiom}」 (${idiomMatchingSelectedMeaning.bopomofo}) 的解釋</p>
+                                                     <p class="text-gray-700">即：${idiomMatchingSelectedMeaning.meaning}</p>
+                                                    </div>`;
+                    } else {
+                        selectedAnswerExplanation = `<div class="p-2 border-l-4 border-red-500 bg-red-50 rounded-r-md">
+                                                     <p class="font-medium text-red-700">您選擇的答案是：「${selectedAnswer}」</p>
+                                                    </div>`;
+                    }
+                } else { 
+                     selectedAnswerExplanation = `<div class="p-2 border-l-4 border-red-500 bg-red-50 rounded-r-md">
+                                                  <p class="font-medium text-red-700">您的選擇是：「${selectedAnswer}」</p>
+                                                 </div>`;
+                }
+                explanationContent += selectedAnswerExplanation;
+                explanationAreaEl.innerHTML = explanationContent;
+                explanationAreaEl.classList.remove('hidden');
+
+
                 if (activeQuizType !== 'incorrectReview') {
                     addIncorrectIdiom(idiomData, questionType);
                 }
@@ -491,6 +525,7 @@
             questionBopomofoEl.textContent = '';
             optionsAreaEl.innerHTML = '';
             feedbackMessageEl.textContent = (score === currentQuizSet.length && currentQuizSet.length > 0) ? '太棒了，全部答對！🥳' : '再接再厲！💪';
+            explanationAreaEl.classList.add('hidden'); // 測驗結束時隱藏解析區塊
             nextQuestionBtn.classList.add('hidden');
             quizProgressEl.textContent = `測驗完成 | 最終分數: ${score}`;
             updateIncorrectReviewButton();

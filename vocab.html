@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        /* Simple transition for view switching */
+        .view {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .view.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom focus ring color */
+        .form-input:focus, .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5); /* Tailwind's blue-300 with opacity */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md mx-auto">
+        <!-- Main Menu View -->
+        <div id="main-menu-view" class="view active space-y-6 text-center">
+            <h1 class="text-4xl font-bold text-slate-900 dark:text-white">Vocabulary Builder</h1>
+            <p class="text-slate-600 dark:text-slate-400">Choose a mode to start learning.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="startQuiz('cn-to-en')" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                    Chinese to English
+                </button>
+                <button onclick="startQuiz('en-to-cn')" class="btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                    English to Chinese
+                </button>
+            </div>
+            <div class="pt-4">
+                <button onclick="showView('stats-view'); updateStatsUI();" class="btn bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-lg w-full">
+                    View Statistics
+                </button>
+            </div>
+             <div class="pt-2">
+                <button onclick="resetProgress()" class="text-sm text-slate-500 hover:text-red-500 dark:hover:text-red-400">Reset All Progress</button>
+            </div>
+        </div>
+
+        <!-- Quiz View -->
+        <div id="quiz-view" class="view">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <span id="progress-indicator" class="text-sm font-medium text-slate-500 dark:text-slate-400">1 / 100</span>
+                     <span id="unfamiliarity-indicator" class="text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 px-2 py-1 rounded-full"></span>
+                </div>
+                <div class="text-center mb-6 min-h-[100px] flex items-center justify-center">
+                    <p id="question" class="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white"></p>
+                </div>
+                <div id="feedback-container" class="mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center">
+                    <!-- Feedback will be injected here -->
+                </div>
+                <div class="space-y-4">
+                    <input type="text" id="answer-input" placeholder="Type your answer here..." class="form-input w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-transparent rounded-lg focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 transition">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="checkAnswer()" class="btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg">Check</button>
+                        <button onclick="showAnswer()" class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg">Show Answer</button>
+                    </div>
+                    <button onclick="nextWord()" id="next-button" class="btn bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg w-full hidden">Next</button>
+                </div>
+                <button onclick="showView('main-menu-view')" class="mt-6 w-full text-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium">Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Stats View -->
+        <div id="stats-view" class="view">
+             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg text-center">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900 dark:text-white">Your Progress</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                    <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Correct Rate</p>
+                        <p id="stats-correct-rate" class="text-3xl font-bold"></p>
+                    </div>
+                    <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Total Attempts</p>
+                        <p id="stats-total-attempts" class="text-3xl font-bold"></p>
+                    </div>
+                    <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Words Learned</p>
+                        <p id="stats-words-learned" class="text-3xl font-bold"></p>
+                    </div>
+                     <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Total Correct</p>
+                        <p id="stats-total-correct" class="text-3xl font-bold"></p>
+                    </div>
+                </div>
+                 <div class="mt-6">
+                     <h3 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">Most Unfamiliar Words</h3>
+                     <ul id="unfamiliar-list" class="text-left space-y-2">
+                         <!-- List will be populated by JS -->
+                     </ul>
+                 </div>
+                <button onclick="showView('main-menu-view')" class="btn mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // The full list of 100 words transcribed from the image.
+        const initialVocabulary = [
+            { id: 1, chinese: '一個', english: 'a', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 2, chinese: '一些', english: 'a few', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 3, chinese: '一點', english: 'a little', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 4, chinese: '許多', english: 'a lot', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 5, chinese: '能夠的', english: 'able', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 6, chinese: '關於', english: 'about', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 7, chinese: '在...上方', english: 'above', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 8, chinese: '在國外', english: 'abroad', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 9, chinese: '在...對面', english: 'across', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 10, chinese: '地址', english: 'address', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 11, chinese: '害怕的', english: 'afraid', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 12, chinese: '在...之後', english: 'after', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 13, chinese: '下午', english: 'afternoon', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 14, chinese: '再一次', english: 'again', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 15, chinese: '年齡', english: 'age', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 16, chinese: '以前', english: 'ago', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 17, chinese: '同意', english: 'agree', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 18, chinese: '在前方', english: 'ahead', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 19, chinese: '空氣', english: 'air', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 20, chinese: '飛機', english: 'airplane', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 21, chinese: '機場', english: 'airport', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 22, chinese: '全部的', english: 'all', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 23, chinese: '幾乎', english: 'almost', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 24, chinese: '沿著', english: 'along', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 25, chinese: '已經', english: 'already', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 26, chinese: '也', english: 'also', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 27, chinese: '總是', english: 'always', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 28, chinese: '上午', english: 'a.m.', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 29, chinese: '美國', english: 'America', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 30, chinese: '美國的', english: 'American', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 31, chinese: '和', english: 'and', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 32, chinese: '生氣的', english: 'angry', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 33, chinese: '動物', english: 'animal', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 34, chinese: '另一個的', english: 'another', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 35, chinese: '回答', english: 'answer', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 36, chinese: '螞蟻', english: 'ant', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 37, chinese: '任何的', english: 'any', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 38, chinese: '任何人', english: 'anyone', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 39, chinese: '任何事物', english: 'anything', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 40, chinese: '公寓', english: 'apartment', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 41, chinese: '出現', english: 'appear', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 42, chinese: '蘋果', english: 'apple', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 43, chinese: '四月', english: 'April', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 44, chinese: '手臂;武器', english: 'arm', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 45, chinese: '在...四處', english: 'around', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 46, chinese: '到達', english: 'arrive', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 47, chinese: '美術', english: 'art', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 48, chinese: '如同...一樣', english: 'as', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 49, chinese: '問', english: 'ask', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 50, chinese: '在', english: 'at', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 51, chinese: '八月', english: 'August', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 52, chinese: '伯(叔)母', english: 'aunt', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 53, chinese: '秋天', english: 'autumn', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 54, chinese: '離', english: 'away', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 55, chinese: '嬰兒', english: 'baby', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 56, chinese: '在...後面', english: 'back', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 57, chinese: '壞的', english: 'bad', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 58, chinese: '羽毛球', english: 'badminton', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 59, chinese: '袋子', english: 'bag', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 60, chinese: '烘烤', english: 'bake', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 61, chinese: '麵包店', english: 'bakery', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 62, chinese: '陽台', english: 'balcony', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 63, chinese: '球', english: 'ball', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 64, chinese: '香蕉', english: 'banana', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 65, chinese: '樂團', english: 'band', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 66, chinese: '銀行', english: 'bank', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 67, chinese: '烤肉', english: 'barbecue', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 68, chinese: '棒球', english: 'baseball', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 69, chinese: '籃子', english: 'basket', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 70, chinese: '籃球', english: 'basketball', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 71, chinese: '蝙蝠', english: 'bat', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 72, chinese: '洗澡', english: 'bath', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 73, chinese: '浴室', english: 'bathroom', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 74, chinese: '是', english: 'be', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 75, chinese: '海灘', english: 'beach', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 76, chinese: '熊', english: 'bear', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 77, chinese: '美麗的', english: 'beautiful', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 78, chinese: '因為', english: 'because', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 79, chinese: '變成', english: 'become', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 80, chinese: '床', english: 'bed', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 81, chinese: '臥室', english: 'bedroom', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 82, chinese: '蜜蜂', english: 'bee', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 83, chinese: '牛肉', english: 'beef', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 84, chinese: '在...之前', english: 'before', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 85, chinese: '開始', english: 'begin', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 86, chinese: '在...後面', english: 'behind', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 87, chinese: '相信', english: 'believe', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 88, chinese: '鈴', english: 'bell', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 89, chinese: '屬於', english: 'belong', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 90, chinese: '在...下方', english: 'below', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 91, chinese: '皮帶', english: 'belt', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 92, chinese: '長椅', english: 'bench', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 93, chinese: '在...旁邊', english: 'beside', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 94, chinese: '在...之間', english: 'between', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 95, chinese: '腳踏車', english: 'bike', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 96, chinese: '大的', english: 'big', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 97, chinese: '鳥', english: 'bird', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 98, chinese: '生日', english: 'birthday', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 99, chinese: '咬', english: 'bite', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 100, chinese: '黑色的', english: 'black', unfamiliarity: 0, attempts: 0, correct: 0 },
+        ];
+
+        // --- STATE ---
+        let vocabulary = [];
+        let quizWords = [];
+        let currentWordIndex = 0;
+        let currentMode = 'cn-to-en'; // 'cn-to-en' or 'en-to-cn'
+
+        // --- DOM ELEMENTS ---
+        const views = document.querySelectorAll('.view');
+        const questionEl = document.getElementById('question');
+        const answerInput = document.getElementById('answer-input');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const nextButton = document.getElementById('next-button');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const unfamiliarityIndicator = document.getElementById('unfamiliarity-indicator');
+
+        // --- FUNCTIONS ---
+
+        /**
+         * Switches the visible view.
+         * @param {string} viewId The ID of the view to show.
+         */
+        function showView(viewId) {
+            views.forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        /**
+         * Loads progress from localStorage or initializes with default data.
+         */
+        function loadProgress() {
+            const savedData = localStorage.getItem('vocabularyAppProgress');
+            if (savedData) {
+                vocabulary = JSON.parse(savedData);
+                 // Data integrity check: if saved data doesn't match the full list, reset.
+                if (vocabulary.length !== initialVocabulary.length) {
+                    console.warn("Vocabulary list has changed. Resetting progress.");
+                    resetAndReload();
+                }
+            } else {
+                // Deep copy to avoid modifying the initial constant
+                vocabulary = JSON.parse(JSON.stringify(initialVocabulary));
+            }
+        }
+        
+        /**
+         * Helper function to reset data and reload.
+         */
+        function resetAndReload() {
+            localStorage.removeItem('vocabularyAppProgress');
+            vocabulary = JSON.parse(JSON.stringify(initialVocabulary));
+            saveProgress();
+        }
+
+        /**
+         * Saves the current vocabulary state to localStorage.
+         */
+        function saveProgress() {
+            localStorage.setItem('vocabularyAppProgress', JSON.stringify(vocabulary));
+        }
+        
+        /**
+         * Resets all progress and reloads the page.
+         */
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all your progress? This cannot be undone.')) {
+                resetAndReload();
+                location.reload();
+            }
+        }
+
+        /**
+         * Starts the quiz in the selected mode.
+         * @param {string} mode - 'cn-to-en' or 'en-to-cn'.
+         */
+        function startQuiz(mode) {
+            currentMode = mode;
+            currentWordIndex = 0;
+            
+            // Sort words by unfamiliarity, descending.
+            quizWords = [...vocabulary].sort((a, b) => b.unfamiliarity - a.unfamiliarity);
+            
+            showView('quiz-view');
+            displayWord();
+        }
+        
+        /**
+         * Displays the current word in the quiz UI.
+         */
+        function displayWord() {
+            if (currentWordIndex >= quizWords.length) {
+                // End of quiz round, reshuffle and start over
+                currentWordIndex = 0;
+                quizWords.sort((a, b) => b.unfamiliarity - a.unfamiliarity);
+            }
+
+            const word = quizWords[currentWordIndex];
+            questionEl.textContent = currentMode === 'cn-to-en' ? word.chinese : word.english;
+            
+            answerInput.value = '';
+            answerInput.disabled = false;
+            answerInput.focus();
+            
+            feedbackContainer.innerHTML = '';
+            feedbackContainer.className = 'mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center';
+            nextButton.classList.add('hidden');
+
+            document.querySelector('#quiz-view .grid-cols-2').style.display = 'grid';
+            
+            progressIndicator.textContent = `${currentWordIndex + 1} / ${quizWords.length}`;
+            unfamiliarityIndicator.textContent = `Unfamiliarity: ${word.unfamiliarity}`;
+        }
+
+        /**
+         * Checks the user's answer.
+         */
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            if (!userAnswer) return;
+
+            const currentWord = quizWords[currentWordIndex];
+            const correctAnswer = currentMode === 'cn-to-en' ? currentWord.english.toLowerCase() : currentWord.chinese;
+            
+            // Handle cases like 'a' vs 'a(n)' or multiple answers separated by ';'
+            const correctAnswers = correctAnswer.split(';').flatMap(part => part.split('/')).map(s => s.replace(/[\(\)]/g, '').trim());
+            
+            currentWord.attempts += 1;
+            let isCorrect = correctAnswers.includes(userAnswer);
+             // Special check for 'a' or 'an'
+            if (currentWord.english === 'a' && (userAnswer === 'a' || userAnswer === 'an')) {
+                isCorrect = true;
+            }
+
+
+            if (isCorrect) {
+                feedbackContainer.className = 'mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+                feedbackContainer.innerHTML = `<strong class="font-bold text-lg">Correct!</strong>`;
+                currentWord.correct += 1;
+                // Decrease unfamiliarity on correct answer, but not below 0
+                if (currentWord.unfamiliarity > 0) {
+                    currentWord.unfamiliarity -= 1;
+                }
+            } else {
+                feedbackContainer.className = 'mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+                feedbackContainer.innerHTML = `
+                    <strong class="font-bold text-lg">Incorrect!</strong>
+                    <span class="text-sm">The correct answer is: <strong>${currentWord.english} / ${currentWord.chinese}</strong></span>
+                `;
+                currentWord.unfamiliarity += 1;
+            }
+            
+            finalizeTurn();
+        }
+
+        /**
+         * Shows the correct answer when the user gives up.
+         */
+        function showAnswer() {
+            const currentWord = quizWords[currentWordIndex];
+            currentWord.unfamiliarity += 2; // Penalize more for giving up
+            currentWord.attempts += 1;
+
+            feedbackContainer.className = 'mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200';
+            feedbackContainer.innerHTML = `
+                <strong class="font-bold text-lg">The answer is:</strong>
+                <span class="text-sm"><strong>${currentWord.english} / ${currentWord.chinese}</strong></span>
+            `;
+            
+            finalizeTurn();
+        }
+        
+        /**
+         * Common logic after a turn is taken (answer checked or shown).
+         */
+        function finalizeTurn() {
+            answerInput.disabled = true;
+            document.querySelector('#quiz-view .grid-cols-2').style.display = 'none';
+            nextButton.classList.remove('hidden');
+            nextButton.focus();
+            saveProgress();
+        }
+
+        /**
+         * Moves to the next word in the quiz.
+         */
+        function nextWord() {
+            currentWordIndex++;
+            displayWord();
+        }
+
+        /**
+         * Calculates and updates the statistics UI.
+         */
+        function updateStatsUI() {
+            let totalAttempts = 0;
+            let totalCorrect = 0;
+            let wordsLearned = 0;
+
+            vocabulary.forEach(word => {
+                totalAttempts += word.attempts;
+                totalCorrect += word.correct;
+                if (word.attempts > 0) {
+                    wordsLearned++;
+                }
+            });
+
+            const correctRate = totalAttempts > 0 ? ((totalCorrect / totalAttempts) * 100).toFixed(1) : '0.0';
+
+            document.getElementById('stats-correct-rate').textContent = `${correctRate}%`;
+            document.getElementById('stats-total-attempts').textContent = totalAttempts;
+            document.getElementById('stats-total-correct').textContent = totalCorrect;
+            document.getElementById('stats-words-learned').textContent = `${wordsLearned} / ${vocabulary.length}`;
+            
+            // Update unfamiliar words list
+            const unfamiliarList = document.getElementById('unfamiliar-list');
+            unfamiliarList.innerHTML = '';
+            
+            const topUnfamiliar = [...vocabulary]
+                .filter(w => w.unfamiliarity > 0)
+                .sort((a, b) => b.unfamiliarity - a.unfamiliarity)
+                .slice(0, 5);
+
+            if (topUnfamiliar.length === 0) {
+                unfamiliarList.innerHTML = `<li class="text-slate-500 dark:text-slate-400">Great job! No unfamiliar words right now.</li>`;
+            } else {
+                topUnfamiliar.forEach(word => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-slate-100 dark:bg-slate-700 p-2 rounded-md';
+                    li.innerHTML = `
+                        <span>${word.chinese} / ${word.english}</span>
+                        <span class="text-sm font-bold text-red-500 dark:text-red-400">${word.unfamiliarity}</span>
+                    `;
+                    unfamiliarList.appendChild(li);
+                });
+            }
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+            
+            // Add keypress listener for the answer input
+            answerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    // Prevent submitting if the next button is visible
+                    if (nextButton.classList.contains('hidden')) {
+                         checkAnswer();
+                    } else {
+                        nextWord();
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
+

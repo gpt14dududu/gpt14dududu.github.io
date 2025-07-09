@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,31 +8,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
         }
+
         /* Simple transition for view switching */
         .view {
             display: none;
             animation: fadeIn 0.5s;
         }
+
         .view.active {
             display: block;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         /* Custom focus ring color */
-        .form-input:focus, .btn:focus {
+        .form-input:focus,
+        .btn:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5); /* Tailwind's blue-300 with opacity */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5);
+            /* Tailwind's blue-300 with opacity */
         }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-center min-h-screen p-4">
+
+<body
+    class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-md mx-auto">
         <!-- Main Menu View -->
@@ -39,20 +57,25 @@
             <h1 class="text-4xl font-bold text-slate-900 dark:text-white">Vocabulary Builder</h1>
             <p class="text-slate-600 dark:text-slate-400">Choose a mode to start learning.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button onclick="startQuiz('cn-to-en')" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                <button onclick="startQuiz('cn-to-en')"
+                    class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
                     Chinese to English
                 </button>
-                <button onclick="startQuiz('en-to-cn')" class="btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                <button onclick="startQuiz('en-to-cn')"
+                    class="btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
                     English to Chinese
                 </button>
             </div>
             <div class="pt-4">
-                <button onclick="showView('stats-view'); updateStatsUI();" class="btn bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-lg w-full">
+                <button onclick="showView('stats-view'); updateStatsUI();"
+                    class="btn bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-lg w-full">
                     View Statistics
                 </button>
             </div>
-             <div class="pt-2">
-                <button onclick="resetProgress()" class="text-sm text-slate-500 hover:text-red-500 dark:hover:text-red-400">Reset All Progress</button>
+            <div class="pt-2">
+                <button onclick="resetProgress()"
+                    class="text-sm text-slate-500 hover:text-red-500 dark:hover:text-red-400">Reset All
+                    Progress</button>
             </div>
         </div>
 
@@ -60,30 +83,40 @@
         <div id="quiz-view" class="view">
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg">
                 <div class="flex justify-between items-center mb-4">
-                    <span id="progress-indicator" class="text-sm font-medium text-slate-500 dark:text-slate-400">1 / 100</span>
-                     <span id="unfamiliarity-indicator" class="text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 px-2 py-1 rounded-full"></span>
+                    <span id="progress-indicator" class="text-sm font-medium text-slate-500 dark:text-slate-400">1 /
+                        100</span>
+                    <span id="unfamiliarity-indicator"
+                        class="text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 px-2 py-1 rounded-full"></span>
                 </div>
                 <div class="text-center mb-6 min-h-[100px] flex items-center justify-center">
                     <p id="question" class="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white"></p>
                 </div>
-                <div id="feedback-container" class="mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center">
+                <div id="feedback-container"
+                    class="mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center">
                     <!-- Feedback will be injected here -->
                 </div>
                 <div class="space-y-4">
-                    <input type="text" id="answer-input" placeholder="Type your answer here..." class="form-input w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-transparent rounded-lg focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 transition">
+                    <input type="text" id="answer-input" placeholder="Type your answer here..."
+                        class="form-input w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-transparent rounded-lg focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 transition">
                     <div class="grid grid-cols-2 gap-4">
-                        <button onclick="checkAnswer()" class="btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg">Check</button>
-                        <button onclick="showAnswer()" class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg">Show Answer</button>
+                        <button onclick="checkAnswer()"
+                            class="btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg">Check</button>
+                        <button onclick="showAnswer()"
+                            class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg">Show
+                            Answer</button>
                     </div>
-                    <button onclick="nextWord()" id="next-button" class="btn bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg w-full hidden">Next</button>
+                    <button onclick="nextWord()" id="next-button"
+                        class="btn bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg w-full hidden">Next</button>
                 </div>
-                <button onclick="showView('main-menu-view')" class="mt-6 w-full text-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium">Back to Menu</button>
+                <button onclick="showView('main-menu-view')"
+                    class="mt-6 w-full text-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium">Back
+                    to Menu</button>
             </div>
         </div>
 
         <!-- Stats View -->
         <div id="stats-view" class="view">
-             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg text-center">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg text-center">
                 <h2 class="text-3xl font-bold mb-6 text-slate-900 dark:text-white">Your Progress</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
                     <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
@@ -98,18 +131,20 @@
                         <p class="text-sm text-slate-500 dark:text-slate-400">Words Learned</p>
                         <p id="stats-words-learned" class="text-3xl font-bold"></p>
                     </div>
-                     <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                    <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
                         <p class="text-sm text-slate-500 dark:text-slate-400">Total Correct</p>
                         <p id="stats-total-correct" class="text-3xl font-bold"></p>
                     </div>
                 </div>
-                 <div class="mt-6">
-                     <h3 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">Most Unfamiliar Words</h3>
-                     <ul id="unfamiliar-list" class="text-left space-y-2">
-                         <!-- List will be populated by JS -->
-                     </ul>
-                 </div>
-                <button onclick="showView('main-menu-view')" class="btn mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full">Back to Menu</button>
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">Most Unfamiliar Words</h3>
+                    <ul id="unfamiliar-list" class="text-left space-y-2">
+                        <!-- List will be populated by JS -->
+                    </ul>
+                </div>
+                <button onclick="showView('main-menu-view')"
+                    class="btn mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full">Back
+                    to Menu</button>
             </div>
         </div>
     </div>
@@ -118,16 +153,16 @@
         // --- DATA ---
         // The full list of 100 words transcribed from the image.
         const initialVocabulary = [
-            { id: 1, chinese: '一個', english: 'a', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 1, chinese: '一個', english: 'a (an)', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 2, chinese: '一些', english: 'a few', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 3, chinese: '一點', english: 'a little', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 4, chinese: '許多', english: 'a lot', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 5, chinese: '能夠的', english: 'able', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 5, chinese: '能夠...的', english: 'able', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 6, chinese: '關於', english: 'about', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 7, chinese: '在...上方', english: 'above', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 8, chinese: '在國外', english: 'abroad', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 9, chinese: '在...對面', english: 'across', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 10, chinese: '地址', english: 'address', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 10, chinese: '女演員', english: 'actress', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 11, chinese: '害怕的', english: 'afraid', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 12, chinese: '在...之後', english: 'after', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 13, chinese: '下午', english: 'afternoon', unfamiliarity: 0, attempts: 0, correct: 0 },
@@ -143,11 +178,11 @@
             { id: 23, chinese: '幾乎', english: 'almost', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 24, chinese: '沿著', english: 'along', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 25, chinese: '已經', english: 'already', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 26, chinese: '也', english: 'also', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 26, chinese: '世', english: 'also', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 27, chinese: '總是', english: 'always', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 28, chinese: '上午', english: 'a.m.', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 29, chinese: '美國', english: 'America', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 30, chinese: '美國的', english: 'American', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 30, chinese: '美國人；美國的', english: 'American', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 31, chinese: '和', english: 'and', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 32, chinese: '生氣的', english: 'angry', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 33, chinese: '動物', english: 'animal', unfamiliarity: 0, attempts: 0, correct: 0 },
@@ -161,17 +196,17 @@
             { id: 41, chinese: '出現', english: 'appear', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 42, chinese: '蘋果', english: 'apple', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 43, chinese: '四月', english: 'April', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 44, chinese: '手臂;武器', english: 'arm', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 45, chinese: '在...四處', english: 'around', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 44, chinese: '手臂,武裝', english: 'arm', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 45, chinese: '在...四周', english: 'around', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 46, chinese: '到達', english: 'arrive', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 47, chinese: '美術', english: 'art', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 48, chinese: '如同...一樣', english: 'as', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 48, chinese: '與...一樣', english: 'as', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 49, chinese: '問', english: 'ask', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 50, chinese: '在', english: 'at', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 51, chinese: '八月', english: 'August', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 52, chinese: '伯(叔)母', english: 'aunt', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 53, chinese: '秋天', english: 'autumn', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 54, chinese: '離', english: 'away', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 54, chinese: '遠離', english: 'away', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 55, chinese: '嬰兒', english: 'baby', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 56, chinese: '在...後面', english: 'back', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 57, chinese: '壞的', english: 'bad', unfamiliarity: 0, attempts: 0, correct: 0 },
@@ -193,32 +228,33 @@
             { id: 73, chinese: '浴室', english: 'bathroom', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 74, chinese: '是', english: 'be', unfamiliarity: 0, attempts: 0, correct: 0 },
             { id: 75, chinese: '海灘', english: 'beach', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 76, chinese: '熊', english: 'bear', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 77, chinese: '美麗的', english: 'beautiful', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 78, chinese: '因為', english: 'because', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 79, chinese: '變成', english: 'become', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 80, chinese: '床', english: 'bed', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 81, chinese: '臥室', english: 'bedroom', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 82, chinese: '蜜蜂', english: 'bee', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 83, chinese: '牛肉', english: 'beef', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 84, chinese: '在...之前', english: 'before', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 85, chinese: '開始', english: 'begin', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 86, chinese: '在...後面', english: 'behind', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 87, chinese: '相信', english: 'believe', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 88, chinese: '鈴', english: 'bell', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 89, chinese: '屬於', english: 'belong', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 90, chinese: '在...下方', english: 'below', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 91, chinese: '皮帶', english: 'belt', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 92, chinese: '長椅', english: 'bench', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 93, chinese: '在...旁邊', english: 'beside', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 94, chinese: '在...之間', english: 'between', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 95, chinese: '腳踏車', english: 'bike', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 96, chinese: '大的', english: 'big', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 97, chinese: '鳥', english: 'bird', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 98, chinese: '生日', english: 'birthday', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 99, chinese: '咬', english: 'bite', unfamiliarity: 0, attempts: 0, correct: 0 },
-            { id: 100, chinese: '黑色的', english: 'black', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 76, chinese: '豆', english: 'bean', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 77, chinese: '熊', english: 'bear', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 78, chinese: '美麗的', english: 'beautiful', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 79, chinese: '因為', english: 'because', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 80, chinese: '變成', english: 'become', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 81, chinese: '床', english: 'bed', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 82, chinese: '臥室', english: 'bedroom', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 83, chinese: '蜜蜂', english: 'bee', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 84, chinese: '牛肉', english: 'beef', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 85, chinese: '在...之前', english: 'before', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 86, chinese: '開始', english: 'begin', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 87, chinese: '在...後面', english: 'behind', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 88, chinese: '相信', english: 'believe', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 89, chinese: '鈴', english: 'bell', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 90, chinese: '屬於', english: 'belong', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 91, chinese: '在...下方', english: 'below', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 92, chinese: '皮帶', english: 'belt', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 93, chinese: '長椅', english: 'bench', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 94, chinese: '在...旁邊', english: 'beside', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 95, chinese: '在...之間', english: 'between', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 96, chinese: '腳踏車', english: 'bike', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 97, chinese: '大的', english: 'big', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 98, chinese: '鳥', english: 'bird', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 99, chinese: '生日', english: 'birthday', unfamiliarity: 0, attempts: 0, correct: 0 },
+            { id: 100, chinese: '咬', english: 'bite', unfamiliarity: 0, attempts: 0, correct: 0 }
         ];
+
 
         // --- STATE ---
         let vocabulary = [];
@@ -255,7 +291,7 @@
             const savedData = localStorage.getItem('vocabularyAppProgress');
             if (savedData) {
                 vocabulary = JSON.parse(savedData);
-                 // Data integrity check: if saved data doesn't match the full list, reset.
+                // Data integrity check: if saved data doesn't match the full list, reset.
                 if (vocabulary.length !== initialVocabulary.length) {
                     console.warn("Vocabulary list has changed. Resetting progress.");
                     resetAndReload();
@@ -265,7 +301,7 @@
                 vocabulary = JSON.parse(JSON.stringify(initialVocabulary));
             }
         }
-        
+
         /**
          * Helper function to reset data and reload.
          */
@@ -281,7 +317,7 @@
         function saveProgress() {
             localStorage.setItem('vocabularyAppProgress', JSON.stringify(vocabulary));
         }
-        
+
         /**
          * Resets all progress and reloads the page.
          */
@@ -299,14 +335,14 @@
         function startQuiz(mode) {
             currentMode = mode;
             currentWordIndex = 0;
-            
+
             // Sort words by unfamiliarity, descending.
             quizWords = [...vocabulary].sort((a, b) => b.unfamiliarity - a.unfamiliarity);
-            
+
             showView('quiz-view');
             displayWord();
         }
-        
+
         /**
          * Displays the current word in the quiz UI.
          */
@@ -319,17 +355,17 @@
 
             const word = quizWords[currentWordIndex];
             questionEl.textContent = currentMode === 'cn-to-en' ? word.chinese : word.english;
-            
+
             answerInput.value = '';
             answerInput.disabled = false;
             answerInput.focus();
-            
+
             feedbackContainer.innerHTML = '';
             feedbackContainer.className = 'mb-4 min-h-[70px] p-3 rounded-lg flex flex-col items-center justify-center text-center';
             nextButton.classList.add('hidden');
 
             document.querySelector('#quiz-view .grid-cols-2').style.display = 'grid';
-            
+
             progressIndicator.textContent = `${currentWordIndex + 1} / ${quizWords.length}`;
             unfamiliarityIndicator.textContent = `Unfamiliarity: ${word.unfamiliarity}`;
         }
@@ -343,13 +379,13 @@
 
             const currentWord = quizWords[currentWordIndex];
             const correctAnswer = currentMode === 'cn-to-en' ? currentWord.english.toLowerCase() : currentWord.chinese;
-            
+
             // Handle cases like 'a' vs 'a(n)' or multiple answers separated by ';'
             const correctAnswers = correctAnswer.split(';').flatMap(part => part.split('/')).map(s => s.replace(/[\(\)]/g, '').trim());
-            
+
             currentWord.attempts += 1;
             let isCorrect = correctAnswers.includes(userAnswer);
-             // Special check for 'a' or 'an'
+            // Special check for 'a' or 'an'
             if (currentWord.english === 'a' && (userAnswer === 'a' || userAnswer === 'an')) {
                 isCorrect = true;
             }
@@ -371,7 +407,7 @@
                 `;
                 currentWord.unfamiliarity += 1;
             }
-            
+
             finalizeTurn();
         }
 
@@ -388,10 +424,10 @@
                 <strong class="font-bold text-lg">The answer is:</strong>
                 <span class="text-sm"><strong>${currentWord.english} / ${currentWord.chinese}</strong></span>
             `;
-            
+
             finalizeTurn();
         }
-        
+
         /**
          * Common logic after a turn is taken (answer checked or shown).
          */
@@ -433,11 +469,11 @@
             document.getElementById('stats-total-attempts').textContent = totalAttempts;
             document.getElementById('stats-total-correct').textContent = totalCorrect;
             document.getElementById('stats-words-learned').textContent = `${wordsLearned} / ${vocabulary.length}`;
-            
+
             // Update unfamiliar words list
             const unfamiliarList = document.getElementById('unfamiliar-list');
             unfamiliarList.innerHTML = '';
-            
+
             const topUnfamiliar = [...vocabulary]
                 .filter(w => w.unfamiliarity > 0)
                 .sort((a, b) => b.unfamiliarity - a.unfamiliarity)
@@ -461,13 +497,13 @@
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             loadProgress();
-            
+
             // Add keypress listener for the answer input
             answerInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     // Prevent submitting if the next button is visible
                     if (nextButton.classList.contains('hidden')) {
-                         checkAnswer();
+                        checkAnswer();
                     } else {
                         nextWord();
                     }
@@ -477,5 +513,5 @@
 
     </script>
 </body>
-</html>
 
+</html>
